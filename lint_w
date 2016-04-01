@@ -1,0 +1,448 @@
+************* Module Main
+W: 27, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W: 29, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W: 31, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 31, 0: No space allowed before comma
+  parser.add_option("--Dflag"         , action="store_true", dest="Dflag")
+                                      ^ (bad-whitespace)
+W: 32, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 32, 0: No space allowed before comma
+  parser.add_option("--Sproc"         , action="store_true", dest="Sproc")
+                                      ^ (bad-whitespace)
+C: 34, 0: Line too long (131/100) (line-too-long)
+W: 34, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 34, 0: Exactly one space required after comma
+  parser.add_option("-c","--config"   , action="store"     , dest="input_conf"  , default="MT6296_Program_Memory_Simulator.config")
+                        ^ (bad-whitespace)
+C: 34, 0: No space allowed before comma
+  parser.add_option("-c","--config"   , action="store"     , dest="input_conf"  , default="MT6296_Program_Memory_Simulator.config")
+                                      ^ (bad-whitespace)
+C: 34, 0: No space allowed before comma
+  parser.add_option("-c","--config"   , action="store"     , dest="input_conf"  , default="MT6296_Program_Memory_Simulator.config")
+                                                           ^ (bad-whitespace)
+C: 34, 0: No space allowed before comma
+  parser.add_option("-c","--config"   , action="store"     , dest="input_conf"  , default="MT6296_Program_Memory_Simulator.config")
+                                                                                ^ (bad-whitespace)
+C: 35, 0: Line too long (140/100) (line-too-long)
+C: 36, 0: Line too long (104/100) (line-too-long)
+W: 36, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 36, 0: Exactly one space required after comma
+  parser.add_option("-a","--assembly" , action="store"     , dest="input_asm"   , default="ICC_IMC.txt")
+                        ^ (bad-whitespace)
+C: 36, 0: No space allowed before comma
+  parser.add_option("-a","--assembly" , action="store"     , dest="input_asm"   , default="ICC_IMC.txt")
+                                      ^ (bad-whitespace)
+C: 36, 0: No space allowed before comma
+  parser.add_option("-a","--assembly" , action="store"     , dest="input_asm"   , default="ICC_IMC.txt")
+                                                           ^ (bad-whitespace)
+C: 36, 0: No space allowed before comma
+  parser.add_option("-a","--assembly" , action="store"     , dest="input_asm"   , default="ICC_IMC.txt")
+                                                                                ^ (bad-whitespace)
+W: 37, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W: 38, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W: 39, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W: 40, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W: 41, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 43, 0: Line too long (106/100) (line-too-long)
+C: 44, 0: Line too long (108/100) (line-too-long)
+W: 44, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 44, 0: Exactly one space required after comma
+  parser.add_option("-t","--trace"    , action="store"     , dest="input_trc"   , default="icc.txt,imc.txt")
+                        ^ (bad-whitespace)
+C: 44, 0: No space allowed before comma
+  parser.add_option("-t","--trace"    , action="store"     , dest="input_trc"   , default="icc.txt,imc.txt")
+                                      ^ (bad-whitespace)
+C: 44, 0: No space allowed before comma
+  parser.add_option("-t","--trace"    , action="store"     , dest="input_trc"   , default="icc.txt,imc.txt")
+                                                           ^ (bad-whitespace)
+C: 44, 0: No space allowed before comma
+  parser.add_option("-t","--trace"    , action="store"     , dest="input_trc"   , default="icc.txt,imc.txt")
+                                                                                ^ (bad-whitespace)
+C: 45, 0: Line too long (103/100) (line-too-long)
+W: 45, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 45, 0: Exactly one space required after comma
+  parser.add_option("-o","--output"   , action="store"     , dest="output_re"   , default="output.txt")
+                        ^ (bad-whitespace)
+C: 45, 0: No space allowed before comma
+  parser.add_option("-o","--output"   , action="store"     , dest="output_re"   , default="output.txt")
+                                      ^ (bad-whitespace)
+C: 45, 0: No space allowed before comma
+  parser.add_option("-o","--output"   , action="store"     , dest="output_re"   , default="output.txt")
+                                                           ^ (bad-whitespace)
+C: 45, 0: No space allowed before comma
+  parser.add_option("-o","--output"   , action="store"     , dest="output_re"   , default="output.txt")
+                                                                                ^ (bad-whitespace)
+W: 47, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 47, 0: No space allowed before comma
+  parser.add_option("--threadnum"     , action="store"     , dest="user_threadnum")
+                                      ^ (bad-whitespace)
+C: 47, 0: No space allowed before comma
+  parser.add_option("--threadnum"     , action="store"     , dest="user_threadnum")
+                                                           ^ (bad-whitespace)
+W: 48, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 48, 0: No space allowed before comma
+  parser.add_option("--threadlist"    , action="store"     , dest="user_threadlist")
+                                      ^ (bad-whitespace)
+C: 48, 0: No space allowed before comma
+  parser.add_option("--threadlist"    , action="store"     , dest="user_threadlist")
+                                                           ^ (bad-whitespace)
+W: 49, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 49, 0: No space allowed before comma
+  parser.add_option("--threadpriority", action="store"     , dest="user_threadpriority")
+                                                           ^ (bad-whitespace)
+W: 50, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 50, 0: No space allowed before comma
+  parser.add_option("--vtilenum"      , action="store"     , dest="user_vtilenum")
+                                      ^ (bad-whitespace)
+C: 50, 0: No space allowed before comma
+  parser.add_option("--vtilenum"      , action="store"     , dest="user_vtilenum")
+                                                           ^ (bad-whitespace)
+C: 52, 0: Line too long (104/100) (line-too-long)
+W: 52, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 52, 0: No space allowed before comma
+  parser.add_option("--cachesize"     , action="store"     , type="string"      , dest="user_cachesize")
+                                      ^ (bad-whitespace)
+C: 52, 0: No space allowed before comma
+  parser.add_option("--cachesize"     , action="store"     , type="string"      , dest="user_cachesize")
+                                                           ^ (bad-whitespace)
+C: 52, 0: No space allowed before comma
+  parser.add_option("--cachesize"     , action="store"     , type="string"      , dest="user_cachesize")
+                                                                                ^ (bad-whitespace)
+W: 53, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 53, 0: No space allowed before comma
+  parser.add_option("--assoc"         , action="store"     , dest="user_assoc")
+                                      ^ (bad-whitespace)
+C: 53, 0: No space allowed before comma
+  parser.add_option("--assoc"         , action="store"     , dest="user_assoc")
+                                                           ^ (bad-whitespace)
+W: 54, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 54, 0: No space allowed before comma
+  parser.add_option("--block"         , action="store"     , dest="user_block")
+                                      ^ (bad-whitespace)
+C: 54, 0: No space allowed before comma
+  parser.add_option("--block"         , action="store"     , dest="user_block")
+                                                           ^ (bad-whitespace)
+W: 55, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 55, 0: No space allowed before comma
+  parser.add_option("--blocksize"     , action="store"     , dest="user_blocksize")
+                                      ^ (bad-whitespace)
+C: 55, 0: No space allowed before comma
+  parser.add_option("--blocksize"     , action="store"     , dest="user_blocksize")
+                                                           ^ (bad-whitespace)
+W: 56, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 56, 0: No space allowed before comma
+  parser.add_option("--subblocksize"  , action="store"     , dest="user_subblocksize")
+                                      ^ (bad-whitespace)
+C: 56, 0: No space allowed before comma
+  parser.add_option("--subblocksize"  , action="store"     , dest="user_subblocksize")
+                                                           ^ (bad-whitespace)
+W: 57, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 57, 0: No space allowed before comma
+  parser.add_option("--subblocknum"   , action="store"     , dest="user_subblocknum")
+                                      ^ (bad-whitespace)
+C: 57, 0: No space allowed before comma
+  parser.add_option("--subblocknum"   , action="store"     , dest="user_subblocknum")
+                                                           ^ (bad-whitespace)
+W: 58, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 58, 0: No space allowed before comma
+  parser.add_option("--hitdelay"      , action="store"     , dest="user_hitdelay")
+                                      ^ (bad-whitespace)
+C: 58, 0: No space allowed before comma
+  parser.add_option("--hitdelay"      , action="store"     , dest="user_hitdelay")
+                                                           ^ (bad-whitespace)
+W: 59, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 59, 0: No space allowed before comma
+  parser.add_option("--misspenalty"   , action="store"     , dest="user_misspenalty")
+                                      ^ (bad-whitespace)
+C: 59, 0: No space allowed before comma
+  parser.add_option("--misspenalty"   , action="store"     , dest="user_misspenalty")
+                                                           ^ (bad-whitespace)
+W: 60, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 60, 0: No space allowed before comma
+  parser.add_option("--replacement"   , action="store"     , dest="user_replacement")
+                                      ^ (bad-whitespace)
+C: 60, 0: No space allowed before comma
+  parser.add_option("--replacement"   , action="store"     , dest="user_replacement")
+                                                           ^ (bad-whitespace)
+W: 61, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 61, 0: No space allowed before comma
+  parser.add_option("--prefetch"      , action="store"     , dest="user_prefetch")
+                                      ^ (bad-whitespace)
+C: 61, 0: No space allowed before comma
+  parser.add_option("--prefetch"      , action="store"     , dest="user_prefetch")
+                                                           ^ (bad-whitespace)
+W: 63, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 63, 0: No space allowed before comma
+  parser.add_option("--depth"         , action="store"     , dest="user_depth")
+                                      ^ (bad-whitespace)
+C: 63, 0: No space allowed before comma
+  parser.add_option("--depth"         , action="store"     , dest="user_depth")
+                                                           ^ (bad-whitespace)
+W: 64, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 64, 0: No space allowed before comma
+  parser.add_option("--entrysize"     , action="store"     , dest="user_entrysize")
+                                      ^ (bad-whitespace)
+C: 64, 0: No space allowed before comma
+  parser.add_option("--entrysize"     , action="store"     , dest="user_entrysize")
+                                                           ^ (bad-whitespace)
+W: 65, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 65, 0: No space allowed before comma
+  parser.add_option("--outsdng"       , action="store"     , dest="user_outsdng")
+                                      ^ (bad-whitespace)
+C: 65, 0: No space allowed before comma
+  parser.add_option("--outsdng"       , action="store"     , dest="user_outsdng")
+                                                           ^ (bad-whitespace)
+W: 66, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 66, 0: No space allowed before comma
+  parser.add_option("--PBUS_bandwidth", action="store"     , dest="user_PBUS_bandwidth")
+                                                           ^ (bad-whitespace)
+W: 67, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 67, 0: No space allowed before comma
+  parser.add_option("--PBUS_priority" , action="store"     , dest="user_PBUS_priority")
+                                      ^ (bad-whitespace)
+C: 67, 0: No space allowed before comma
+  parser.add_option("--PBUS_priority" , action="store"     , dest="user_PBUS_priority")
+                                                           ^ (bad-whitespace)
+W: 69, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W: 73, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 73, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C: 73, 0: No space allowed after bracket
+  if ( os.path.isfile(GlobalVar.options.input_conf) == False):
+     ^ (bad-whitespace)
+W: 74, 0: Bad indentation. Found 4 spaces, expected 8 (bad-indentation)
+W: 75, 0: Bad indentation. Found 4 spaces, expected 8 (bad-indentation)
+W: 77, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 77, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C: 77, 0: No space allowed after bracket
+  if ( os.path.isfile(GlobalVar.options.input_asm) == False):
+     ^ (bad-whitespace)
+W: 78, 0: Bad indentation. Found 4 spaces, expected 8 (bad-indentation)
+W: 79, 0: Bad indentation. Found 4 spaces, expected 8 (bad-indentation)
+W: 81, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 81, 0: Exactly one space required before assignment
+  input_conf_ptr      = open(GlobalVar.options.input_conf, "r")
+                      ^ (bad-whitespace)
+W: 82, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 82, 0: Exactly one space required before assignment
+  input_asm_ptr       = open(GlobalVar.options.input_asm , "r")
+                      ^ (bad-whitespace)
+C: 82, 0: No space allowed before comma
+  input_asm_ptr       = open(GlobalVar.options.input_asm , "r")
+                                                         ^ (bad-whitespace)
+W: 83, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 83, 0: No space allowed before comma
+  GlobalVar.outputptr = open(GlobalVar.options.output_re , "w")
+                                                         ^ (bad-whitespace)
+W: 84, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W: 86, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 86, 0: Exactly one space required before assignment
+  input_trc_list            = []
+                            ^ (bad-whitespace)
+W: 87, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C: 87, 0: Exactly one space required before assignment
+  input_trc_list_ptr        = []
+                            ^ (bad-whitespace)
+W: 88, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W: 89, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W: 92, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W: 94, 0: Bad indentation. Found 4 spaces, expected 8 (bad-indentation)
+C: 94, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C: 94, 0: No space allowed after bracket
+    if ( os.path.isfile(i_trc) == False):
+       ^ (bad-whitespace)
+W: 95, 0: Bad indentation. Found 6 spaces, expected 12 (bad-indentation)
+W: 96, 0: Bad indentation. Found 6 spaces, expected 12 (bad-indentation)
+W: 97, 0: Bad indentation. Found 4 spaces, expected 8 (bad-indentation)
+C: 97, 0: No space allowed before comma
+    input_trc_list_ptr.append(open(i_trc , "r"))
+                                         ^ (bad-whitespace)
+W: 98, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W: 99, 0: Bad indentation. Found 4 spaces, expected 8 (bad-indentation)
+W:103, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W:104, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+C:104, 0: Exactly one space required before assignment
+  GlobalVar.allcontents_asm  = re.sub("//[w \t\.,_\|]*", "" , input_asm_ptr.read())
+                             ^ (bad-whitespace)
+C:104, 0: No space allowed before comma
+  GlobalVar.allcontents_asm  = re.sub("//[w \t\.,_\|]*", "" , input_asm_ptr.read())
+                                                            ^ (bad-whitespace)
+W:106, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W:107, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W:108, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W:109, 0: Bad indentation. Found 4 spaces, expected 8 (bad-indentation)
+W:113, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W:114, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W:115, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W:116, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W:117, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W:118, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W:122, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W:124, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W:126, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W:138, 0: Bad indentation. Found 2 spaces, expected 4 (bad-indentation)
+W:104, 0: Anomalous backslash in string: '\.'. String constant might be missing an r prefix. (anomalous-backslash-in-string)
+W:104, 0: Anomalous backslash in string: '\|'. String constant might be missing an r prefix. (anomalous-backslash-in-string)
+C:  1, 0: Missing module docstring (missing-docstring)
+C:  4, 0: Import "import sys" should be placed at the top of the module (wrong-import-position)
+C:  5, 0: Import "import os" should be placed at the top of the module (wrong-import-position)
+C:  6, 0: Import "import re" should be placed at the top of the module (wrong-import-position)
+W:  7, 0: Uses of a deprecated module 'optparse' (deprecated-module)
+C:  7, 0: Import "import optparse" should be placed at the top of the module (wrong-import-position)
+C:  8, 0: Import "import operator" should be placed at the top of the module (wrong-import-position)
+C:  9, 0: Import "import inspect" should be placed at the top of the module (wrong-import-position)
+C: 10, 0: Import "import math" should be placed at the top of the module (wrong-import-position)
+C: 11, 0: Import "import random" should be placed at the top of the module (wrong-import-position)
+C: 12, 0: Import "from datetime import datetime" should be placed at the top of the module (wrong-import-position)
+W: 14, 0: Wildcard import Architecture (wildcard-import)
+C: 14, 0: Import "from Architecture import *" should be placed at the top of the module (wrong-import-position)
+W: 15, 0: Wildcard import Cache (wildcard-import)
+C: 15, 0: Import "from Cache import *" should be placed at the top of the module (wrong-import-position)
+W: 16, 0: Wildcard import VLC (wildcard-import)
+C: 16, 0: Import "from VLC import *" should be placed at the top of the module (wrong-import-position)
+W: 17, 0: Wildcard import PCSimulator (wildcard-import)
+C: 17, 0: Import "from PCSimulator import *" should be placed at the top of the module (wrong-import-position)
+W: 18, 0: Wildcard import Simulator (wildcard-import)
+C: 18, 0: Import "from Simulator import *" should be placed at the top of the module (wrong-import-position)
+C: 19, 0: Import "from GlobalVar import GlobalVar" should be placed at the top of the module (wrong-import-position)
+C: 29, 2: Invalid constant name "parser" (invalid-name)
+C: 37, 2: Invalid constant name "default_trace" (invalid-name)
+C: 69,22: Invalid constant name "args" (invalid-name)
+C: 73, 7: Comparison to False should be 'not expr' or 'expr is False' (singleton-comparison)
+C: 77, 7: Comparison to False should be 'not expr' or 'expr is False' (singleton-comparison)
+C: 81, 2: Invalid constant name "input_conf_ptr" (invalid-name)
+C: 82, 2: Invalid constant name "input_asm_ptr" (invalid-name)
+C: 86, 2: Invalid constant name "input_trc_list" (invalid-name)
+C: 87, 2: Invalid constant name "input_trc_list_ptr" (invalid-name)
+C: 89, 2: Invalid constant name "input_trc_list" (invalid-name)
+C: 94, 9: Comparison to False should be 'not expr' or 'expr is False' (singleton-comparison)
+C:122, 2: Invalid constant name "u_simulator" (invalid-name)
+W:  8, 0: Unused import operator (unused-import)
+W:  9, 0: Unused import inspect (unused-import)
+W: 10, 0: Unused import math (unused-import)
+W: 11, 0: Unused import random (unused-import)
+W: 12, 0: Unused datetime imported from datetime (unused-import)
+W: 15, 0: Unused import Cacheblock from wildcard import (unused-wildcard-import)
+W: 15, 0: Unused import CacheSubBlock from wildcard import (unused-wildcard-import)
+W: 15, 0: Unused import CacheAssoc from wildcard import (unused-wildcard-import)
+W: 16, 0: Unused import Inst from wildcard import (unused-wildcard-import)
+W: 16, 0: Unused import Request from wildcard import (unused-wildcard-import)
+W: 16, 0: Unused import Queue from wildcard import (unused-wildcard-import)
+W: 17, 0: Unused import PCSimulator from wildcard import (unused-wildcard-import)
+
+
+Report
+======
+87 statements analysed.
+
+Statistics by type
+------------------
+
++---------+-------+-----------+-----------+------------+---------+
+|type     |number |old number |difference |%documented |%badname |
++=========+=======+===========+===========+============+=========+
+|module   |1      |1          |=          |0.00        |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|class    |0      |0          |=          |0           |0        |
++---------+-------+-----------+-----------+------------+---------+
+|method   |0      |0          |=          |0           |0        |
++---------+-------+-----------+-----------+------------+---------+
+|function |0      |0          |=          |0           |0        |
++---------+-------+-----------+-----------+------------+---------+
+
+
+
+External dependencies
+---------------------
+::
+
+    GlobalVar 
+      \-GlobalVar (Main)
+
+
+
+Raw metrics
+-----------
+
++----------+-------+------+---------+-----------+
+|type      |number |%     |previous |difference |
++==========+=======+======+=========+===========+
+|code      |89     |63.57 |89       |=          |
++----------+-------+------+---------+-----------+
+|docstring |0      |0.00  |0        |=          |
++----------+-------+------+---------+-----------+
+|comment   |27     |19.29 |27       |=          |
++----------+-------+------+---------+-----------+
+|empty     |24     |17.14 |24       |=          |
++----------+-------+------+---------+-----------+
+
+
+
+Duplication
+-----------
+
++-------------------------+------+---------+-----------+
+|                         |now   |previous |difference |
++=========================+======+=========+===========+
+|nb duplicated lines      |0     |0        |=          |
++-------------------------+------+---------+-----------+
+|percent duplicated lines |0.000 |0.000    |=          |
++-------------------------+------+---------+-----------+
+
+
+
+Messages by category
+--------------------
+
++-----------+-------+---------+-----------+
+|type       |number |previous |difference |
++===========+=======+=========+===========+
+|convention |105    |105      |=          |
++-----------+-------+---------+-----------+
+|refactor   |0      |0        |=          |
++-----------+-------+---------+-----------+
+|warning    |90     |90       |=          |
++-----------+-------+---------+-----------+
+|error      |0      |0        |=          |
++-----------+-------+---------+-----------+
+
+
+
+Messages
+--------
+
++------------------------------+------------+
+|message id                    |occurrences |
++==============================+============+
+|bad-indentation               |70          |
++------------------------------+------------+
+|bad-whitespace                |67          |
++------------------------------+------------+
+|wrong-import-position         |15          |
++------------------------------+------------+
+|invalid-name                  |9           |
++------------------------------+------------+
+|unused-wildcard-import        |7           |
++------------------------------+------------+
+|line-too-long                 |7           |
++------------------------------+------------+
+|wildcard-import               |5           |
++------------------------------+------------+
+|unused-import                 |5           |
++------------------------------+------------+
+|superfluous-parens            |3           |
++------------------------------+------------+
+|singleton-comparison          |3           |
++------------------------------+------------+
+|anomalous-backslash-in-string |2           |
++------------------------------+------------+
+|missing-docstring             |1           |
++------------------------------+------------+
+|deprecated-module             |1           |
++------------------------------+------------+
+
+
+
+Global evaluation
+-----------------
+Your code has been rated at -12.41/10 (previous run: -12.41/10, +0.00)
+
