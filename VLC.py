@@ -40,11 +40,8 @@ class VLC:
 
   @staticmethod
   def isVLCreState(inputState):
-    if (inputState in VLC.stateVLCre):
-      return inputState
-    else:
-      print("Error: %s is not in VLC stateVLCre list" % inputState)
-      exit(1)
+    assert (inputState in VLC.stateVLCre), ("Error: %s is not in VLC stateVLCre list" % inputState)
+    return inputState
 
   @staticmethod
   def getCfgByName(input_name):
@@ -202,63 +199,23 @@ class VLC:
         re = "VLC_NEXT_INST_HIT"
     return re
 
-  def consumeNextInst(self, input_nextinst):
-    re = ""
-    cur_instptr = self.instptr
-
-    predictnextinst = self.instList[self.instptr]
-    try:
-      realnextinst    = self.instList[self.instbyteaddr2listindex[input_nextinst]]
-    except:
-      print(input_nextinst, hex(input_nextinst))
-      exit(-1)
-
-    if (not predictnextinst == realnextinst):
-      re =  "VLC_NOT_NEXT_INST"
-
-    else:
-      inst_total_part = len(predictnextinst.subblocklist)
-      inst_found_part = 0
-
-      # print(predictnextinst.subblocklist, end=": ")
-
-      for iinstsubblock in predictnextinst.subblocklist:
-        if (iinstsubblock in self.vlcEntry):
-          inst_found_part += 1
-      # print(inst_total_part, inst_found_part, predictnextinst.subblocklist, self.vlcEntry)
-
-      # print(inst_found_part, inst_total_part)
-
-      if (inst_found_part == inst_total_part):
-        self.consumeEntryAndInstptr(cur_instptr)
-        re =  "VLC_NEXT_INST_HIT"
-      else:
-        # print("There are some part of NextInst is not in VLC = ", self.instptr, ":", iinstpart)
-        if (not inst_total_part == 1 and not inst_found_part == 0):
-          re =  "VLC_NEXT_INST_PARTIAL_MISS"
-        else:
-          re = "VLC_NEXT_INST_WHOLE_MISS"
-    if GlobalVar.options.Dflag == True:
-      print(re)
-    self.fillFreeEntry(cur_instptr)
-    return re
+  def consumeNextInst(self):
+    
+    self.findFreeEntryandFill(self.instptr)
 
   def resetEntryBySubblock(self, input_subblock):
     for ientry in range(0, len(self.vlcEntry)):
       if (self.vlcEntry[ientry] == input_subblock):
         self.vlcEntry[ientry] = -1
 
-  def consumeEntryAndInstptr(self, cur_instptr):
+  def consumeEntryAndInstptr(self):
     # print("consumeEntry")
-    if (cur_instptr < len(self.instList) - 1):
-      if (not self.instList[cur_instptr].subblockaddr == self.instList[cur_instptr+1].subblockaddr):
-        self.resetEntryBySubblock(self.instList[cur_instptr].subblockaddr)
+    if (self.instptr < len(self.instList) - 1):
+      if (not self.instList[self.instptr].subblockaddr == self.instList[self.instptr+1].subblockaddr):
+        self.resetEntryBySubblock(self.instList[self.instptr].subblockaddr)
       self.instptr      += 1
 
-  def fillFreeEntry(self, cur_instptr):
-    # print("consumeAndSupplyEntry by ")
-    # instsubblockhead = self.instList[self.instptr].subblockaddr + VLC.getCfgByName("depth")
-
+  def findFreeEntryandFill(self):
     # find free Entry if non return
     free_Entry = -1
     for ientry in range(0, VLC.getCfgByName("depth")):
@@ -277,34 +234,14 @@ class VLC:
         break
     if(free_outsdng == -1):return
 
-    if(not self.req_queue.qsize() == 0):
-      item_subblock = self.req_queue.get()
+    if(not self.subblock_queue.qsize() == 0):
+      item_subblock = self.subblock_queue.get()
       self.vlcEntry[free_Entry]                   = -2
       self.outsdnglist[free_outsdng].resetAttribute()
       self.outsdnglist[free_outsdng].ID           = free_Entry
       self.outsdnglist[free_outsdng].state        = Request.isRequestState("WAIT")
       self.outsdnglist[free_outsdng].subblockaddr = item_subblock
-    else:
-      ongoing_subblocklist = []
-      for ioutsdnglist in range(0, VLC.getCfgByName("outsdng")):
-        if(not self.outsdnglist[ioutsdnglist].state == Request.isRequestState("INITIAL") and not self.outsdnglist[ioutsdnglist].flushed == 1):
-          ongoing_subblocklist.append(self.outsdnglist[ioutsdnglist].subblockaddr)
 
-      for ioutsdnglist in range(1, VLC.getCfgByName("outsdng")+1):
-        VLC_prefetch_subblockaddr = self.instList[cur_instptr].subblockaddr + ioutsdnglist
-
-        # self.req_queue.put(VLC_prefetch_subblockaddr)
-
-        if (VLC_prefetch_subblockaddr < len(self.instList)
-            and not VLC_prefetch_subblockaddr in ongoing_subblocklist
-            and not VLC_prefetch_subblockaddr in self.vlcEntry):
-          # vlc2cache_req = Request(re_index, Request.isRequestState("WAIT"), instsubblockhead)
-          self.vlcEntry[free_Entry]                   = -2
-          self.outsdnglist[free_outsdng].resetAttribute()
-          self.outsdnglist[free_outsdng].ID           = free_Entry
-          self.outsdnglist[free_outsdng].state        = Request.isRequestState("WAIT")
-          self.outsdnglist[free_outsdng].subblockaddr = VLC_prefetch_subblockaddr
-          break
 
   def fillVLC(self, input_addr):
     pass
@@ -320,18 +257,19 @@ class VLC:
     # reset VLC fifo
     self.resetvlcEntry()
 
-    for ioutsdnglist in range(outsdng_MAX):
+    for ioutsdnglist in range(VLC.getCfgByName("outsdng")):
       if( not self.outsdnglist[ioutsdnglist].state == Request.isRequestState("INITIAL")):
-        self.outsdnglist[ioutsdnglist].flushed = 1
-
-    self.req_queue.put(next_wanted_insthead)
+        self.outsdnglist[ioutsdnglist].flushed = True
+    
+    self.subblock_queue.put(next_wanted_insthead)
     return
 
   def calStallTime(self):
     myPCTracer = self.PCTracer_ptr
     try_abstime, try_clock, try_PC = myPCTracer.nextPC()
-    return (int(try_clock) - int(self.cur_clock) - 2)
+    return (int(try_clock) - int(self.cur_clock) - 1)
 
+    
   def initialize(self):
     input_asm = GlobalVar.allcontents_asm
     self.initAttribute()
@@ -343,7 +281,7 @@ class VLC:
     for ioutsdnglist in range(VLC.getCfgByName("outsdng")):
       self.outsdnglist.append(Request())
 
-    self.req_queue   = queue()
+    self.subblock_queue   = Queue()
     
     input_VLC_instance = re.search(self.node_ptr.node_name + "_start([\w\s\n\*]*)" + self.node_ptr.node_name + "_end", GlobalVar.allcontents_conf).group(1)
     Trace_idx = re.search("Trace_idx[\s]*([\d]*)", input_VLC_instance).group(1)
@@ -365,7 +303,7 @@ class VLC:
     self.vlcEntry = []                # store the sub-block addr, represent it is in the VLC
     # outstanding list
     self.outsdnglist = []             #outsdng list, req that has been issue
-    self.req_queue   = None           #outsdng list, req that is waiting for issue
+    self.subblock_queue   = None           #outsdng list, req that is waiting for issue
     
     # for self.PCTracer_ptr.nextPC(), may be is useless?
     self.cur_abstime = 0
@@ -390,50 +328,64 @@ class VLC:
     # for VLC input PClist check
     if (myPCTracer.PCpointer >= len(myPCTracer.PClist)):
       return
-    
+      
+    #PCTracer_state state machine transmit
     myPCTracer.PCTracer_state = myPCTracer.PCTracer_nextState
-    # self.VLC_state            = self.VLC_nextState
-    # PCTracer behavioral
-    if (myPCTracer.PCTracer_state == PCTracer.isPCTracer_state("PCTracer_CORE_STALL")
-     or myPCTracer.PCTracer_state == PCTracer.isPCTracer_state("PCTracer_PENDING_BY_VLC")):
-      pass
+
+    self.cur_abstime, self.cur_clock, self.cur_PC = myPCTracer.nextPC()
+    self.VLC_state = VLC.isVLCreState(self.compareNextInst(self.cur_PC))
+    
+    
+    PCTracerNextState = ""
+    if (myPCTracer.PCTracer_state == PCTracer.isPCTracer_state("PCTracer_CORE_STALL")):
+      if (self.PCTracer_counter == 0):
+        PCTracerNextState = ("PCTracer_ASSIGN_PC")
+      else:
+        self.PCTracer_counter -= 1
+        PCTracerNextState = ("PCTracer_CORE_STALL")
+
+    elif (myPCTracer.PCTracer_state == PCTracer.isPCTracer_state("PCTracer_PENDING_BY_VLC")):
+
+      if (self.VLC_state == VLC.isVLCreState("VLC_NEXT_INST_HIT")):
+        self.consumeEntryAndInstptr()
+        self.incAtrByName("hitcount")# #####################################
+        if (not myPCTracer.consumePC() == "PCend"):
+          self.PCTracer_counter = self.calStallTime()
+          if (self.PCTracer_counter > 0):
+            PCTracerNextState = ("PCTracer_CORE_STALL")
+          else:
+            PCTracerNextState = ("PCTracer_ASSIGN_PC")
+      else:
+        PCTracerNextState = ("PCTracer_PENDING_BY_VLC")
+    
     elif (myPCTracer.PCTracer_state == PCTracer.isPCTracer_state("PCTracer_ASSIGN_PC")):
-
-      self.cur_abstime, self.cur_clock, self.cur_PC = self.PCTracer_ptr.nextPC()
-      self.VLC_state = self.compareNextInst(self.cur_PC)
-
+      self.incAtrByName("accesscount")# #####################################
       if   (self.VLC_state == VLC.isVLCreState("VLC_NEXT_INST_HIT")):
-        pass
+        self.consumeEntryAndInstptr()
+        self.incAtrByName("hitcount")# #####################################
+        if (not myPCTracer.consumePC() == "PCend"):
+          self.PCTracer_counter = self.calStallTime()
+          if (self.PCTracer_counter > 0):
+            PCTracerNextState = ("PCTracer_CORE_STALL")
+          else:
+            PCTracerNextState = ("PCTracer_ASSIGN_PC")
       elif (self.VLC_state == VLC.isVLCreState("VLC_NOT_NEXT_INST")):
         self.flushVLC(self.cur_PC)
+        PCTracerNextState = ("PCTracer_PENDING_BY_VLC")
+        self.incAtrByName("misscount")  # #####################################
       elif (self.VLC_state == VLC.isVLCreState("VLC_NEXT_INST_PARTIAL_MISS")):
-        self.fillVLC(self.cur_PC) #do nothing
+        PCTracerNextState = ("PCTracer_PENDING_BY_VLC")
+        self.incAtrByName("misscount")  # #####################################
       elif (self.VLC_state == VLC.isVLCreState("VLC_NEXT_INST_WHOLE_MISS")):
-        self.fillVLC(self.cur_PC) #do nothing
-      else:
-        print("Error: %s is not in VLCreState list" % self.VLC_state)
-        exit(1)
-  
-  
+        PCTracerNextState = ("PCTracer_PENDING_BY_VLC")
+        self.incAtrByName("misscount")  # #####################################
+    
+    myPCTracer.transPCTracerNextState(PCTracerNextState)
+    self.findFreeEntryandFill()
 
-        
+    # reset "COMMITTED" req
     for ireq in self.outsdnglist:
-      if (ireq.state == Request.isRequestState("WAIT")):
-        ireq.state = Request.isRequestState("ACCESS_CACHE")
-        ireq.counter = 1
-
-    # count every req
-    for ireq in self.outsdnglist:
-      if (ireq.state == Request.isRequestState("ACCESS_CACHE")):
-        ireq.counter -= 1
-        if (ireq.counter <= 0):
-          ireq.state = Request.isRequestState("EMPTY")
-          if (not ireq.flushed == 1):
-            self.vlcEntry[ireq.ID] = ireq.subblockaddr
-
-    # reset "EMPTY" req
-    for ireq in self.outsdnglist:
-      if (ireq.state == Request.isRequestState("EMPTY")):
+      if (ireq.state == Request.isRequestState("COMMITTED")):
         ireq.resetAttribute()
 
   def pos_cycle(self):
@@ -441,72 +393,11 @@ class VLC:
     # for VLC input PClist check
     if (myPCTracer.PCpointer >= len(myPCTracer.PClist)):
       return
-    # print(myPCTracer.nextPC())
-    myPCTracer.PCTracer_state = myPCTracer.PCTracer_nextState
-    re_VLC = ""
 
-    # PCTracer behavioral
-    if (myPCTracer.PCTracer_state == PCTracer.isPCTracer_state("PCTracer_CORE_STALL")):
-      if (self.PCTracer_counter == 0):
-        myPCTracer.transPCTracerNextState("PCTracer_ASSIGN_PC")
-      else:
-        self.PCTracer_counter -= 1
-        myPCTracer.transPCTracerNextState("PCTracer_CORE_STALL")
-
-    elif (myPCTracer.PCTracer_state == PCTracer.isPCTracer_state("PCTracer_ASSIGN_PC")):
-      self.cur_abstime, self.cur_clock, self.cur_PC = myPCTracer.nextPC()
-      re_VLC = self.consumeNextInst(self.cur_PC)
-      # #####################################
-      self.incAtrByName("accesscount")
-      # #####################################
-      if (re_VLC == VLC.isVLCreState("VLC_NEXT_INST_HIT")):
-        # #####################################
-        self.incAtrByName("hitcount")
-        # #####################################
-        if (not myPCTracer.consumePC() == "PCend"):
-          if (self.calStallTime() >= 0):
-            self.PCTracer_counter = self.calStallTime()
-            myPCTracer.transPCTracerNextState("PCTracer_CORE_STALL")
-          else:
-            myPCTracer.transPCTracerNextState("PCTracer_ASSIGN_PC")
-
-      elif (re_VLC == VLC.isVLCreState("VLC_NOT_NEXT_INST")):
-        # #####################################
-        self.incAtrByName("misscount")
-        # #####################################
-        myPCTracer.transPCTracerNextState("PCTracer_PENDING_BY_VLC")
-
-      elif (re_VLC == VLC.isVLCreState("VLC_NEXT_INST_PARTIAL_MISS")):
-        # #####################################
-        self.incAtrByName("misscount")
-        # #####################################
-        myPCTracer.transPCTracerNextState("PCTracer_PENDING_BY_VLC")
-
-      elif (re_VLC == VLC.isVLCreState("VLC_NEXT_INST_WHOLE_MISS")):
-        # #####################################
-        self.incAtrByName("misscount")
-        # #####################################
-        myPCTracer.transPCTracerNextState("PCTracer_PENDING_BY_VLC")
-
-      else:
-        print("Error: %s is not in VLCreState list" % re_VLC)
-        exit(1)
-
-    elif (myPCTracer.PCTracer_state == PCTracer.isPCTracer_state("PCTracer_PENDING_BY_VLC")):
-      self.cur_abstime, self.cur_clock, self.cur_PC = myPCTracer.nextPC()
-      re_VLC = self.consumeNextInst(self.cur_PC)
-
-      if (re_VLC == VLC.isVLCreState("VLC_NEXT_INST_HIT")):
-        if (not myPCTracer.consumePC() == "PCend"):
-          if (self.calStallTime() >= 0):
-            self.PCTracer_counter = self.calStallTime()
-            myPCTracer.transPCTracerNextState("PCTracer_CORE_STALL")
-          else:
-            myPCTracer.transPCTracerNextState("PCTracer_ASSIGN_PC")
-      else:
-        myPCTracer.transPCTracerNextState("PCTracer_PENDING_BY_VLC")
-
-    else:
-      printprint("Error: %s is not in statePCSim list" % myPCTracer.PCTracer_nextState)
-      exit(1)
-
+    for ioutsdnglist in range(VLC.getCfgByName("outsdng")):
+      if(ioutsdnglist.state == Request.isRequestState("WAIT")):
+        pass
+      
+      
+      
+      

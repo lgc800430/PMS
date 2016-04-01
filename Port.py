@@ -27,6 +27,10 @@ class Port:
     # self.port_ptr             = None
     self.port_belong_node_ptr = None
     self.port_belong_bus_ptr  = None
+    
+    self.port_NB_list  = [] #Node to BUS list
+    self.port_BN_list  = [] #BUS to Node list
+    
   def construct(self, line_value):
     conf_regex = GlobalVar.conf_regex
     name_in_port        = re.search("([" + conf_regex + "]*)@[" + conf_regex + "]*", line_value).group(1)
@@ -46,3 +50,8 @@ class Port:
     link_node.node_port_dist[name_in_port] = self
     link_bus.bus_port_dist[name_in_port]   = self
     return self.port_name
+    
+    
+    
+    
+    

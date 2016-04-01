@@ -1,10 +1,10 @@
 __author__ = 'MTK07896'
 
 class Request:
-  stateRequest = ["WAIT"          #wait for trigger
-                , "ACCESS_CACHE"  #counting
-                , "EMPTY"         #wait for reset
-                , "INITIAL"       #initial state
+  stateRequest = ["INITIAL"       #initial state
+                , "WAIT"          #wait for trigger
+                , "OUTSTANDING"   #OUTSTANDING
+                , "COMMITTED"         #wait for reset
                   ]
 
   @staticmethod
@@ -18,6 +18,10 @@ class Request:
     self.ID           = -1     #which entry index
     self.counter      = -1
     self.subblockaddr = -1
+    
+    self.source_node       = [] #source node
+    self.destination_list  = [] #destination node list
+    self.duration_list     = [] #duration node list
 
   def __init__(self):
     self.state        = Request.isRequestState("INITIAL")
@@ -25,3 +29,9 @@ class Request:
     self.ID           = -1     #which entry index
     self.counter      = -1
     self.subblockaddr = -1
+    
+    self.source_node       = [] #source node
+    self.destination_list  = [] #destination node list
+    self.duration_list     = [] #duration node list
+    
+    self.resetAttribute()
