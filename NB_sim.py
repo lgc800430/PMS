@@ -52,8 +52,8 @@ class NB_sim:
     for key, value in u_topology.node_dist.items():
       value.node_ptr.initial_cycle()
       # print("initial_cycle", key )
-    # for key, value in u_topology.bus_dist.items():
-      # value.pre_cycle()
+    for key, value in u_topology.bus_dist.items():
+      value.pre_cycle()
       # print("initial_cycle", key )
     # for key, value in u_topology.port_dist.items():
       # value.pre_cycle()
@@ -64,8 +64,8 @@ class NB_sim:
     for key, value in u_topology.node_dist.items():
       value.node_ptr.pre_cycle()
     #   # print("pre_cycle", key)
-    # for key, value in u_topology.bus_dist.items():
-    #   #       value.node_ptr.pre_cycle()
+    for key, value in u_topology.bus_dist.items():
+      value.pre_cycle()
     #   # print("pre_cycle", key)
     # for key, value in u_topology.port_dist.items():
     #   #       value.node_ptr.pre_cycle()
@@ -77,8 +77,8 @@ class NB_sim:
     for key, value in u_topology.node_dist.items():
       value.node_ptr.cur_cycle()
     #   # print("pre_cycle", key)
-    # for key, value in u_topology.bus_dist.items():
-    #   #       value.node_ptr.cur_cycle()
+    for key, value in u_topology.bus_dist.items():
+      value.cur_cycle()
     #   print("pre_cycle", key)
     # for key, value in u_topology.port_dist.items():
     #   #       value.node_ptr.cur_cycle()
@@ -89,8 +89,8 @@ class NB_sim:
     for key, value in u_topology.node_dist.items():
       value.node_ptr.pos_cycle()
     #   print("pre_cycle", key)
-    # for key, value in u_topology.bus_dist.items():
-    #   #       value.node_ptr.pos_cycle()
+    for key, value in u_topology.bus_dist.items():
+      value.pos_cycle()
     #   print("pre_cycle", key)
     # for key, value in u_topology.port_dist.items():
     #   #       value.node_ptr.pos_cycle()

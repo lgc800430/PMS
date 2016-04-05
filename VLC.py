@@ -13,8 +13,10 @@ from queue import Queue
 from Cache import *
 from Inst import *
 from Request import *
-from GlobalVar import GlobalVar
+from GlobalVar import *
 from PCTracer import *
+from Transaction import *
+
 
 #--------------------------------------------
 # class VLC
@@ -200,7 +202,7 @@ class VLC:
     return re
 
   def consumeNextInst(self):
-    
+
     self.findFreeEntryandFill(self.instptr)
 
   def resetEntryBySubblock(self, input_subblock):
@@ -216,26 +218,33 @@ class VLC:
       self.instptr      += 1
 
   def findFreeEntryandFill(self):
-    # find free Entry if non return
+    ''' find a free Entry, if not just return with nothing
+        occupy a outsdnglist in VLC, if not just return with nothing
+    '''
+
+    ### find free Entry###
     free_Entry = -1
-    for ientry in range(0, VLC.getCfgByName("depth")):
-      if(self.vlcEntry[ientry] == -1):
-        free_Entry = ientry
+    for ientry in self.vlcEntry:
+      if(ientry == -1):
+        free_Entry = self.vlcEntry.index(ientry)
         break
+    ### return, if found no free Entry ###
     if(free_Entry == -1):
       return
 
-    # find free outsdng if non return
+    ### occupy a outsdnglist in VLC ###
     free_outsdng = -1
-    for ioutsdnglist in range(0, VLC.getCfgByName("outsdng")):
-      # find a free outsdng
-      if(self.outsdnglist[ioutsdnglist].state == Request.isRequestState("INITIAL")):
-        free_outsdng = ioutsdnglist
+    for ioutsdnglist in self.outsdnglist:
+      if(ioutsdnglist.state == Request.isRequestState("INITIAL")):
+        free_outsdng = self.outsdnglist.index(ioutsdnglist)
         break
-    if(free_outsdng == -1):return
+    ### return, if can not occupy a outsdnglist in VLC ###
+    if(free_outsdng == -1):
+      return
 
     if(not self.subblock_queue.qsize() == 0):
       item_subblock = self.subblock_queue.get()
+      ### vlcEntry = -2 meaning this entry is ONGO, waiting for response ###
       self.vlcEntry[free_Entry]                   = -2
       self.outsdnglist[free_outsdng].resetAttribute()
       self.outsdnglist[free_outsdng].ID           = free_Entry
@@ -260,7 +269,7 @@ class VLC:
     for ioutsdnglist in range(VLC.getCfgByName("outsdng")):
       if( not self.outsdnglist[ioutsdnglist].state == Request.isRequestState("INITIAL")):
         self.outsdnglist[ioutsdnglist].flushed = True
-    
+
     self.subblock_queue.put(next_wanted_insthead)
     return
 
@@ -269,7 +278,7 @@ class VLC:
     try_abstime, try_clock, try_PC = myPCTracer.nextPC()
     return (int(try_clock) - int(self.cur_clock) - 1)
 
-    
+
   def initialize(self):
     input_asm = GlobalVar.allcontents_asm
     self.initAttribute()
@@ -277,12 +286,12 @@ class VLC:
     # create association of VLC
     for ientry in range(VLC.getCfgByName("depth")):
       self.vlcEntry.append(-1)
-    
+
     for ioutsdnglist in range(VLC.getCfgByName("outsdng")):
       self.outsdnglist.append(Request())
 
     self.subblock_queue   = Queue()
-    
+
     input_VLC_instance = re.search(self.node_ptr.node_name + "_start([\w\s\n\*]*)" + self.node_ptr.node_name + "_end", GlobalVar.allcontents_conf).group(1)
     Trace_idx = re.search("Trace_idx[\s]*([\d]*)", input_VLC_instance).group(1)
     # for every VLC there is a PCTracker
@@ -290,26 +299,32 @@ class VLC:
     self.PCTracer_ptr.initialize(int(Trace_idx))
 
   def __init__(self):
+    ### pointer back to Node obj ###
     self.node_ptr = None
 
     self.PCTracer_ptr = None
     self.attribute = {}
 
-    # inst list
-    self.instList = []                #inst list
-    self.instptr = -1                 #inst list pointer
-    self.instbyteaddr2listindex = {}  # ?
-    # entry list
-    self.vlcEntry = []                # store the sub-block addr, represent it is in the VLC
-    # outstanding list
-    self.outsdnglist = []             #outsdng list, req that has been issue
-    self.subblock_queue   = None           #outsdng list, req that is waiting for issue
+    ### inst list ###
+    self.instList = []
+    ### inst list pointer ###
+    self.instptr = -1                 
+    ###? ###
+    self.instbyteaddr2listindex = {}  
     
-    # for self.PCTracer_ptr.nextPC(), may be is useless?
+    ### entry list, store the sub-block addr, represent it is in the VLC ###
+    ### -1: INITIAL -2: ONGO ###
+    self.vlcEntry = []
+    ### outstanding list #outsdng list, req that has "been" issue ###
+    self.outsdnglist = []
+    ### subblock list, req that is "waiting" for issue ###
+    self.subblock_queue   = None
+
+    ### for self.PCTracer_ptr.nextPC(), may be is useless? ###
     self.cur_abstime = 0
     self.cur_clock = 0
     self.cur_PC = 0
-    
+
     self.VLC_state = 0
     # self.VLC_nextState = 0
 
@@ -328,14 +343,14 @@ class VLC:
     # for VLC input PClist check
     if (myPCTracer.PCpointer >= len(myPCTracer.PClist)):
       return
-      
+
     #PCTracer_state state machine transmit
     myPCTracer.PCTracer_state = myPCTracer.PCTracer_nextState
 
     self.cur_abstime, self.cur_clock, self.cur_PC = myPCTracer.nextPC()
     self.VLC_state = VLC.isVLCreState(self.compareNextInst(self.cur_PC))
-    
-    
+
+
     PCTracerNextState = ""
     if (myPCTracer.PCTracer_state == PCTracer.isPCTracer_state("PCTracer_CORE_STALL")):
       if (self.PCTracer_counter == 0):
@@ -357,7 +372,7 @@ class VLC:
             PCTracerNextState = ("PCTracer_ASSIGN_PC")
       else:
         PCTracerNextState = ("PCTracer_PENDING_BY_VLC")
-    
+
     elif (myPCTracer.PCTracer_state == PCTracer.isPCTracer_state("PCTracer_ASSIGN_PC")):
       self.incAtrByName("accesscount")# #####################################
       if   (self.VLC_state == VLC.isVLCreState("VLC_NEXT_INST_HIT")):
@@ -379,7 +394,7 @@ class VLC:
       elif (self.VLC_state == VLC.isVLCreState("VLC_NEXT_INST_WHOLE_MISS")):
         PCTracerNextState = ("PCTracer_PENDING_BY_VLC")
         self.incAtrByName("misscount")  # #####################################
-    
+
     myPCTracer.transPCTracerNextState(PCTracerNextState)
     self.findFreeEntryandFill()
 
@@ -393,11 +408,14 @@ class VLC:
     # for VLC input PClist check
     if (myPCTracer.PCpointer >= len(myPCTracer.PClist)):
       return
-
+    ### find the "WAITTING" one in outsdnglist, make a transaction
     for ioutsdnglist in range(VLC.getCfgByName("outsdng")):
-      if(ioutsdnglist.state == Request.isRequestState("WAIT")):
-        pass
-      
-      
-      
-      
+      if(self.outsdnglist[ioutsdnglist].state == Request.isRequestState("WAIT")):
+        tmp_transaction = Transaction()
+        tmp_transaction.source_node      = self.node_ptr
+        tmp_transaction.destination_list.append(GlobalVar.topology_ptr.node_dist["SIC"])
+        tmp_transaction.duration_list.append(self.node_ptr)
+        
+        self.node_ptr.node_port_dist[self.node_ptr.node_name + "_PBUS"].port_NB_reqs.append(tmp_transaction)
+
+
