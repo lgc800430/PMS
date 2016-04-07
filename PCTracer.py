@@ -16,7 +16,7 @@ class PCTracer:
     else:
       print("Error: %s is not in statePCSim list" % inputState)
       print("PCTracer.statePCSim", PCTracer.statePCSim)
-      exit(1)
+      exit(100)
 
   def transPCTracerNextState(self, inputState):
     self.PCTracer_nextState = self.isPCTracer_state(inputState)

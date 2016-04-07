@@ -18,7 +18,7 @@ from Topology import *
 from Cache import *
 from VLC import *
 from PCTracer import *
-from GlobalVar import GlobalVar
+from GlobalVar import *
 
 class NB_sim:
   def __init__(self):
@@ -36,71 +36,59 @@ class NB_sim:
   def simulate(self):
     # for thread_idx in range(2):
       # self.initSimulate(thread_idx)
-    self.initSimulate()
+    u_topology = GlobalVar.topology_ptr
+    self.initSimulate(u_topology)
     while (not self.isSimEnd()):
-      self.run()
+      self.run(u_topology)
 
 
-  def initSimulate(self):
+  def initSimulate(self, u_topology):
     # self.transPCSimNextState("ASSIGN_PC")
     # firstPC = 0
     # a, initclock, b = self.u_PCTracer.PClist[firstPC].replace(" ", "").split(",")
     # self.current_CYC = int(initclock)
 
-    u_topology = GlobalVar.topology_ptr
-
     for key, value in u_topology.node_dist.items():
       value.node_ptr.initial_cycle()
-      # print("initial_cycle", key )
-    for key, value in u_topology.bus_dist.items():
-      value.pre_cycle()
-      # print("initial_cycle", key )
-    # for key, value in u_topology.port_dist.items():
-      # value.pre_cycle()
-      # print("initial_cycle", key )
 
-  def run_pre_cycle(self):
-    u_topology = GlobalVar.topology_ptr
+    for key, value in u_topology.bus_dist.items():
+      value.initial_cycle()
+
+  def node_pre_cycle(self, u_topology):
     for key, value in u_topology.node_dist.items():
       value.node_ptr.pre_cycle()
-    #   # print("pre_cycle", key)
+
+  def bus_pre_cycle(self, u_topology):
     for key, value in u_topology.bus_dist.items():
       value.pre_cycle()
-    #   # print("pre_cycle", key)
-    # for key, value in u_topology.port_dist.items():
-    #   #       value.node_ptr.pre_cycle()
-    #   # print("pre_cycle", key)
 
-
-  def run_cur_cycle(self):
-    u_topology = GlobalVar.topology_ptr
+  def node_cur_cycle(self, u_topology):
     for key, value in u_topology.node_dist.items():
       value.node_ptr.cur_cycle()
-    #   # print("pre_cycle", key)
+
+  def bus_cur_cycle(self, u_topology):
     for key, value in u_topology.bus_dist.items():
       value.cur_cycle()
-    #   print("pre_cycle", key)
-    # for key, value in u_topology.port_dist.items():
-    #   #       value.node_ptr.cur_cycle()
-    #   print("pre_cycle", key)
 
-  def run_pos_cycle(self):
-    u_topology = GlobalVar.topology_ptr
+  def node_pos_cycle(self, u_topology):
     for key, value in u_topology.node_dist.items():
       value.node_ptr.pos_cycle()
-    #   print("pre_cycle", key)
+
+  def bus_pos_cycle(self, u_topology):
     for key, value in u_topology.bus_dist.items():
       value.pos_cycle()
-    #   print("pre_cycle", key)
-    # for key, value in u_topology.port_dist.items():
-    #   #       value.node_ptr.pos_cycle()
-    #   print("pre_cycle", key)
 
-  def run(self):
-    u_topology = GlobalVar.topology_ptr
-    self.run_pre_cycle()
-    self.run_cur_cycle()
-    self.run_pos_cycle()
+  def run(self, u_topology):
+
+    ### first step => Bus run  ###
+    self.bus_pre_cycle(u_topology)
+    self.bus_cur_cycle(u_topology)
+    self.bus_pos_cycle(u_topology)
+    ### second step => Node run  ###
+    self.node_pre_cycle(u_topology)
+    self.node_cur_cycle(u_topology)
+    self.node_pos_cycle(u_topology)
+    
     print("current_CYC = ", self.current_CYC)
     self.current_CYC += 1
 

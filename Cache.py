@@ -1,5 +1,3 @@
-__author__ = 'MTK07896'
-
 #!/usr/local/bin/python
 import sys
 import os
@@ -9,10 +7,13 @@ import operator
 import inspect
 import math
 import random
-from datetime import datetime
-from GlobalVar import GlobalVar
+from GlobalVar import *
+from Transaction import *
 
 
+__author__ = 'MTK07896'
+
+TOPPEST = 0
 #--------------------------------------------
 # class CacheTop
 #--------------------------------------------
@@ -31,7 +32,9 @@ class Cache:
                       , "hitdelay"
                       , "misspenalty"
                       , "replacement"
-                      , "prefetch"   ]
+                      , "prefetch"
+                      , "outsdng"
+                      ]
 
   attributelist     = [ "misscount"
                       , "accesscount"
@@ -122,19 +125,6 @@ class Cache:
     for iattri in self.attributelist:
       self.attribute[iattri] = 0
       # print(iattri, self.getAtrByName(iattri))
-
-  def initialize(self):
-    self.initAttribute()
-    # create association of cache
-    for iassoc in range(0, Cache.getCfgByName("assoc")):
-      self.cacheAssoc.append(CacheAssoc())
-      self.cacheAssoc[iassoc].initializeAssoc(iassoc)
-
-    if (Cache.getCfgByName("replacement") == self.replacement["LRU"]):
-      for iassoc in range(0, Cache.getCfgByName("assoc")):
-        self.LRUlist.append(iassoc)
-    elif (Cache.getCfgByName("replacement") == self.replacement["RR"]):
-      self.RRptr = 0
 
   def printInfo(self, input_assoc):
     if (input_assoc < 0):
@@ -229,24 +219,78 @@ class Cache:
       rplblock.setblockTag(mytag)
       return Cache.isCachereState("CACHE_MISS")
 
+  def initialize(self):
+    self.initAttribute()
+    # create association of cache
+    for iassoc in range(0, Cache.getCfgByName("assoc")):
+      self.cacheAssoc.append(CacheAssoc())
+      self.cacheAssoc[iassoc].initializeAssoc(iassoc)
+
+    if (Cache.getCfgByName("replacement") == self.replacement["LRU"]):
+      for iassoc in range(0, Cache.getCfgByName("assoc")):
+        self.LRUlist.append(iassoc)
+    elif (Cache.getCfgByName("replacement") == self.replacement["RR"]):
+      self.RRptr = 0
+
   def __init__(self):
     self.attribute  = {}
     self.cacheAssoc = []
     self.RRptr      = 0  #RR pointer for replacement
     self.LRUlist    = [] #LRU list for replacement
 
+    ### outstanding list #outsdng list, req that has "been" issue ###
+    self.cache_outsdng = []
+
   def initial_cycle(self):
     pass
 
-
   def pre_cycle(self):
-    pass
-
+    for key, value in self.node_ptr.node_port_dist.items():
+      if( len(value.port_BN_trans) > 0):
+        ### there should be only one item in port_BN_trans of each port ###
+        assert (len(value.port_BN_trans) == 1), ("len(value.port_BN_trans) == ", len(value.port_BN_trans))
+        ### get the transaction ###
+        cur_transaction = value.port_BN_trans[TOPPEST]
+        del value.port_BN_trans[TOPPEST]
+        ### set all transaction in bus_port_arbitor counter to exact value ###
+        cur_transaction.duration_list.append(self.node_ptr)
+        cur_transaction.counter = 0
+        cur_transaction.state = Transaction.isTransactionState("WAIT")
+        assert (not cur_transaction.destination_list == None ), ("not cur_transaction.destination_list == None")
+        self.cache_outsdng.append(cur_transaction)
+        ### len(self.cache_outsdng) must < len(outsdng) in VLC ###
+        from VLC import VLC
+        assert (len(self.cache_outsdng) <= VLC.getCfgByName("outsdng")), ("len(self.cache_outsdng) %d < len(VLC.getCfgByName(\"outsdng\")) %d" % (len(self.cache_outsdng), VLC.getCfgByName("outsdng")))
+        
   def cur_cycle(self):
-    pass
-
+    for i_cache_outsdng in self.cache_outsdng:
+      ### count down the counter for each transaction in cache_outsdng ###
+      if(i_cache_outsdng.state == Transaction.isTransactionState("WAIT") and i_cache_outsdng.counter > 0):
+        i_cache_outsdng.counter -= 1
+      if(i_cache_outsdng.state == Transaction.isTransactionState("WAIT") and i_cache_outsdng.counter == 0):
+        my_req = i_cache_outsdng.source_req
+        cache_re = self.findCache(my_req.subblockaddr)
+        ### cache MISS ###
+        if (cache_re == None):
+          i_cache_outsdng.state = Transaction.isTransactionState("COMMITTED")
+        ### cache HIT ###  
+        else:
+          i_cache_outsdng.state = Transaction.isTransactionState("COMMITTED")
+    
   def pos_cycle(self):
-    pass
+    for i_cache_outsdng in self.cache_outsdng:
+      if(i_cache_outsdng.state == Transaction.isTransactionState("COMMITTED")):
+        my_req = i_cache_outsdng.source_req
+        
+        tmp_transaction = Transaction()
+        tmp_transaction.source_node = self.node_ptr
+        tmp_transaction.destination_list.append(i_cache_outsdng.source_node)
+        tmp_transaction.duration_list.append(self.node_ptr)
+        tmp_transaction.source_req = my_req
+        
+        self.node_ptr.node_port_dist[self.node_ptr.node_name + "_PBUS"].port_NB_trans.append(tmp_transaction)
+        del self.cache_outsdng[self.cache_outsdng.index(i_cache_outsdng)]
+        
 
 #--------------------------------------------
 # class Cache
@@ -271,14 +315,23 @@ class CacheAssoc:
 #--------------------------------------------
 class Cacheblock:
 
-  #*************CombSubBlock******************
-
   def invalidblock(self):
     self.valid = 0
+    for i_subblock in self.cacheSubBlock:
+      i_subblock.subblock_valid = 0
 
   def validblock(self):
     self.valid = 1
+    for i_subblock in self.cacheSubBlock:
+      i_subblock.subblock_valid = 1
 
+  def checkblockvalid(self):
+    for i_subblock in self.cacheSubBlock:
+      if(i_subblock.subblock_valid == 0):
+        return False
+    self.valid = 1
+    return True
+      
   def getblockValid(self):
     return self.valid
 
@@ -288,7 +341,6 @@ class Cacheblock:
   def getblockTag(self):
     return self.tag
 
-  #*************User interface****************
   def initializeblock(self, input_ID):
     self.block_ID = input_ID
     for isubblock in range(0, Cache.getCfgByName("subblocknum")):
@@ -303,7 +355,6 @@ class Cacheblock:
     self.hitcount = 0
     self.misscount = 0
     self.tag = -1
-  #*************User end*********************
 
 
 #--------------------------------------------
@@ -315,9 +366,8 @@ class CacheSubBlock:
     self.subblock_ID = input_ID
 
   def __init__(self):
-    self.subblock_ID = -1
+    self.subblock_ID    = -1
+    self.subblock_valid = 0
 
-  #*************User interface***************
-  #*************User end*********************
 
 

@@ -17,6 +17,10 @@ from GlobalVar import *
 from PCTracer import *
 from Transaction import *
 
+dbg_queue = Queue()
+dbg_del_queue = Queue()
+INITIAL  = -1
+ONGO     = -2 
 
 #--------------------------------------------
 # class VLC
@@ -201,21 +205,28 @@ class VLC:
         re = "VLC_NEXT_INST_HIT"
     return re
 
-  def consumeNextInst(self):
-
-    self.findFreeEntryandFill(self.instptr)
-
   def resetEntryBySubblock(self, input_subblock):
     for ientry in range(0, len(self.vlcEntry)):
       if (self.vlcEntry[ientry] == input_subblock):
         self.vlcEntry[ientry] = -1
+        return True
+    return False
 
   def consumeEntryAndInstptr(self):
     # print("consumeEntry")
     if (self.instptr < len(self.instList) - 1):
       if (not self.instList[self.instptr].subblockaddr == self.instList[self.instptr+1].subblockaddr):
-        self.resetEntryBySubblock(self.instList[self.instptr].subblockaddr)
+        dbg_del_queue.put(self.instList[self.instptr].subblockaddr)
+        re_resetEntryBySubblock = self.resetEntryBySubblock(self.instList[self.instptr].subblockaddr)
+        assert(re_resetEntryBySubblock)
+        ### prefetch the next subblockaddr (VLC prefetch) ###
+        self.subblock_queue.put(self.instList[self.instptr].subblockaddr + VLC.getCfgByName("depth"))
+        dbg_queue.put(self.instList[self.instptr].subblockaddr + VLC.getCfgByName("depth"))
+      ### self.instptr incre ###
       self.instptr      += 1
+    
+    
+    
 
   def findFreeEntryandFill(self):
     ''' find a free Entry, if not just return with nothing
@@ -251,7 +262,6 @@ class VLC:
       self.outsdnglist[free_outsdng].state        = Request.isRequestState("WAIT")
       self.outsdnglist[free_outsdng].subblockaddr = item_subblock
 
-
   def fillVLC(self, input_addr):
     pass
 
@@ -260,24 +270,27 @@ class VLC:
       self.vlcEntry[ientry] = -1
 
   def flushVLC(self, input_addr):
-    next_wanted_insthead  = self.instList[self.instbyteaddr2listindex[input_addr]].subblockaddr
-    self.instptr          = self.instList[self.instbyteaddr2listindex[input_addr]].ID
+    wanted_insthead  = self.instList[self.instbyteaddr2listindex[input_addr]].subblockaddr
+    self.instptr     = self.instList[self.instbyteaddr2listindex[input_addr]].ID
 
     # reset VLC fifo
     self.resetvlcEntry()
+    
+    ### set reqs in outsdnglist as FLUSHED ###
+    for i_outsdnglist in self.outsdnglist:
+      if( not i_outsdnglist.state == Request.isRequestState("INITIAL")):
+        i_outsdnglist.flushed = True
 
-    for ioutsdnglist in range(VLC.getCfgByName("outsdng")):
-      if( not self.outsdnglist[ioutsdnglist].state == Request.isRequestState("INITIAL")):
-        self.outsdnglist[ioutsdnglist].flushed = True
-
-    self.subblock_queue.put(next_wanted_insthead)
+    for i_outsdnglist in self.outsdnglist:
+      ### fill subblock_queue the flush num ###
+      self.subblock_queue.put(wanted_insthead + self.outsdnglist.index(i_outsdnglist))
+      dbg_queue.put(wanted_insthead + self.outsdnglist.index(i_outsdnglist))
     return
 
   def calStallTime(self):
     myPCTracer = self.PCTracer_ptr
     try_abstime, try_clock, try_PC = myPCTracer.nextPC()
     return (int(try_clock) - int(self.cur_clock) - 1)
-
 
   def initialize(self):
     input_asm = GlobalVar.allcontents_asm
@@ -290,7 +303,7 @@ class VLC:
     for ioutsdnglist in range(VLC.getCfgByName("outsdng")):
       self.outsdnglist.append(Request())
 
-    self.subblock_queue   = Queue()
+    self.subblock_queue = Queue()
 
     input_VLC_instance = re.search(self.node_ptr.node_name + "_start([\w\s\n\*]*)" + self.node_ptr.node_name + "_end", GlobalVar.allcontents_conf).group(1)
     Trace_idx = re.search("Trace_idx[\s]*([\d]*)", input_VLC_instance).group(1)
@@ -337,7 +350,21 @@ class VLC:
     # for VLC input PClist check
     if (myPCTracer.PCpointer >= len(myPCTracer.PClist)):
       return
-
+    ### receive from PBUS Port ###
+    for key, value in self.node_ptr.node_port_dist.items():
+      if( len(value.port_BN_trans) > 0):
+        ### there should be only one item in port_BN_trans of each port ###
+        assert (len(value.port_BN_trans) == 1), ("len(value.port_BN_trans) == ", len(value.port_BN_trans))
+        ### get the transaction ###
+        cur_transaction = value.port_BN_trans[TOPPEST]
+        del value.port_BN_trans[TOPPEST]
+        ### set all transaction in bus_port_arbitor counter to exact value ###
+        myreq = cur_transaction.source_req
+        assert (myreq.state == Request.isRequestState("OUTSTANDING")), ("fatal error myreq.state == %s" % myreq.state)
+        if(not myreq.flushed == True):
+          myreq.state = Request.isRequestState("COMMITTED")
+          self.vlcEntry[myreq.ID] = myreq.subblockaddr
+        
   def cur_cycle(self):
     myPCTracer = self.PCTracer_ptr
     # for VLC input PClist check
@@ -370,7 +397,10 @@ class VLC:
             PCTracerNextState = ("PCTracer_CORE_STALL")
           else:
             PCTracerNextState = ("PCTracer_ASSIGN_PC")
+        else:
+          PCTracerNextState = ("PCTracer_CORE_STALL")
       else:
+        # self.flushVLC(self.cur_PC)
         PCTracerNextState = ("PCTracer_PENDING_BY_VLC")
 
     elif (myPCTracer.PCTracer_state == PCTracer.isPCTracer_state("PCTracer_ASSIGN_PC")):
@@ -384,6 +414,8 @@ class VLC:
             PCTracerNextState = ("PCTracer_CORE_STALL")
           else:
             PCTracerNextState = ("PCTracer_ASSIGN_PC")
+        else:
+          PCTracerNextState = ("PCTracer_CORE_STALL")
       elif (self.VLC_state == VLC.isVLCreState("VLC_NOT_NEXT_INST")):
         self.flushVLC(self.cur_PC)
         PCTracerNextState = ("PCTracer_PENDING_BY_VLC")
@@ -411,11 +443,15 @@ class VLC:
     ### find the "WAITTING" one in outsdnglist, make a transaction
     for ioutsdnglist in range(VLC.getCfgByName("outsdng")):
       if(self.outsdnglist[ioutsdnglist].state == Request.isRequestState("WAIT")):
+        ### mark this req in outsdnglist as OUTSTANDING state ###
+        self.outsdnglist[ioutsdnglist].state = Request.isRequestState("OUTSTANDING")
+        ### turn req to a new transaction ###
         tmp_transaction = Transaction()
         tmp_transaction.source_node      = self.node_ptr
         tmp_transaction.destination_list.append(GlobalVar.topology_ptr.node_dist["SIC"])
         tmp_transaction.duration_list.append(self.node_ptr)
+        tmp_transaction.source_req = self.outsdnglist[ioutsdnglist]
         
-        self.node_ptr.node_port_dist[self.node_ptr.node_name + "_PBUS"].port_NB_reqs.append(tmp_transaction)
+        self.node_ptr.node_port_dist[self.node_ptr.node_name + "_PBUS"].port_NB_trans.append(tmp_transaction)
 
 

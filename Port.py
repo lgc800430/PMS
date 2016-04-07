@@ -28,8 +28,8 @@ class Port:
     self.port_belong_node_ptr = None
     self.port_belong_bus_ptr  = None
     
-    self.port_NB_reqs  = [] #Node to BUS list
-    self.port_BN_reqs  = [] #BUS to Node list
+    self.port_NB_trans  = [] #Node to BUS list
+    self.port_BN_trans  = [] #BUS to Node list
 
 
 
@@ -48,8 +48,7 @@ class Port:
     # tmp_port.port_ptr             = tmp_port
     self.port_belong_node_ptr = link_node
     self.port_belong_bus_ptr  = link_bus
-    ### bus_port_arbitor construct###
-    link_bus.bus_port_arbitor[link_node.node_name] = []
+
     
     link_node.node_port_dist[name_in_port] = self
     link_bus.bus_port_dist[name_in_port]   = self

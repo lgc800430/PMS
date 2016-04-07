@@ -1,9 +1,101 @@
 start:
-00000000   cc db 00 54   in CR54, R30
-00000004            00   nop
-00000005            00   nop
-00000006   cc fb 40 57   bitset 0x1, R30, R30
-0000000a      f6 36 70   out R30, CR54
-0000000d   0c 07 04 d9   out 0x41, CR56
-00000011            00   nop
-00000012      86 08 f0   store32 R0, [0x440]
+00000000          7c 28 30 b2 1f   string 4
+00000005             8a f3 e1 56   string 3
+00000009             f9 f1 ca 75   string 3
+0000000d   c5 85 bb c2 98 b0 c4 9d   string 7
+00000015                      4d   string 0
+00000016                   57 fc   string 1
+00000018    fd c5 4b c3 52 4a 3c   string 6
+0000001f   a2 f1 f9 61 79 3b c6 e8   string 7
+00000027                      b6   string 0
+00000028          89 fc 29 04 ef   string 4
+0000002d             24 5c fc ea   string 3
+00000031                      f5   string 0
+00000032                52 2f 00   string 2
+00000035   50 06 dd c5 34 40 6b 32   string 7
+0000003d          6e 5d 6c 4e cb   string 4
+00000042       46 1d 82 46 78 75   string 5
+00000048   43 4b e6 5d 8d 35 e1 2d   string 7
+00000050       c5 09 1a ef 02 d9   string 5
+00000056                      81   string 0
+00000057                e6 36 d9   string 2
+0000005a   ca 81 2c 8f e2 bd 65 59   string 7
+00000062                   ee a5   string 1
+00000064                9c 87 6b   string 2
+00000067    c9 a4 2c d5 36 75 64   string 6
+0000006e          d5 e3 1a 6b 60   string 4
+00000073                      fe   string 0
+00000074                5c fc 66   string 2
+00000077    56 5b e7 d9 58 3a 22   string 6
+0000007e       58 a2 c9 84 e2 19   string 5
+00000084                   03 9f   string 1
+00000086       da 1e df 6d b8 1b   string 5
+0000008c                      45   string 0
+0000008d             d4 bd 85 76   string 3
+00000091          f5 80 a6 bd 8b   string 4
+00000096       ab 2b 0e f6 35 c1   string 5
+0000009c             5f 25 2f 62   string 3
+000000a0   4c 1f ce 83 f7 ba b8 57   string 7
+000000a8                   e4 bc   string 1
+000000aa          77 e4 25 e8 9c   string 4
+000000af             ea 36 8e 0e   string 3
+000000b3             dc c3 09 10   string 3
+000000b7             0d 4d 85 df   string 3
+000000bb                      84   string 0
+000000bc                      c2   string 0
+000000bd          49 8c aa 0f c1   string 4
+000000c2   46 43 86 d9 8b 95 ce 9a   string 7
+000000ca    0a ee c5 98 79 54 02   string 6
+000000d1                aa df 12   string 2
+000000d4   a4 aa 79 0c 6b 6d 67 a1   string 7
+000000dc                   78 80   string 1
+000000de             06 97 78 14   string 3
+000000e2   56 ba 3c c7 91 97 ca 03   string 7
+000000ea   1a 79 27 c4 7d 76 59 67   string 7
+000000f2                   b2 62   string 1
+000000f4          56 90 cf a2 60   string 4
+000000f9   6e f3 3a 1c 5d 9b 5c 44   string 7
+00000101          41 a7 41 61 e6   string 4
+00000106                   ec a3   string 1
+00000108                9a 8f a3   string 2
+0000010b                   9b b0   string 1
+0000010d    e4 8c aa 30 54 46 2e   string 6
+00000114                a0 dd c7   string 2
+00000117    82 48 92 8c 3b 32 56   string 6
+0000011e                2e 94 b9   string 2
+00000121                      2c   string 0
+00000122                   8d 35   string 1
+00000124                7d 94 53   string 2
+00000127                b9 63 82   string 2
+0000012a                57 29 65   string 2
+0000012d    fe f8 26 7d 14 22 0b   string 6
+00000134                      e1   string 0
+00000135                   e4 8d   string 1
+00000137       23 14 a3 56 60 77   string 5
+0000013d    d9 ca 9d c4 c4 60 6d   string 6
+00000144   41 20 d1 b8 2c cc 01 36   string 7
+0000014c                      7e   string 0
+0000014d                   48 f0   string 1
+0000014f   6f 75 e8 33 97 a7 2f df   string 7
+00000157       e9 09 7a 3b 52 52   string 5
+0000015d             0b b5 07 d6   string 3
+00000161                51 8d ac   string 2
+00000164                   cc 1f   string 1
+00000166                      ee   string 0
+00000167   f7 a8 62 64 c8 18 18 a3   string 7
+0000016f                fc 15 d3   string 2
+00000172             b6 c0 46 38   string 3
+00000176       e2 6e 2d 33 b7 c6   string 5
+0000017c   78 a0 5c 79 a1 1e 66 97   string 7
+00000184       50 ff 8e 38 ad d2   string 5
+0000018a             a4 07 d3 b4   string 3
+0000018e   18 30 d9 81 61 78 0b 0a   string 7
+00000196                e7 41 31   string 2
+00000199    f5 40 1d 38 5d 75 9c   string 6
+000001a0                   a8 17   string 1
+000001a2                   cf 0d   string 1
+000001a4    71 2c a2 20 fd 4f 3a   string 6
+000001ab                   a8 44   string 1
+000001ad             7c fe d7 50   string 3
+000001b1    40 e2 ca 65 2f 03 ac   string 6
+000001b8       51 6d 52 a6 95 81   string 5

@@ -26,4 +26,4 @@ class Request:
     self.counter      = -1
     self.subblockaddr = -1
     
-    self.resetAttribute()
+    
