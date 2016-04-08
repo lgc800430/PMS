@@ -27,10 +27,9 @@ class Node:
 
     self.node_ptr        = None   #pointer to instance of Cache
     self.node_port_dist  = {}     #Port dist of this Node
-  def construct(self, line_value):
-    conf_regex = GlobalVar.conf_regex
-    name_in_node  = re.search("([" + conf_regex + "]*)@[" + conf_regex + "]*", line_value).group(1)
-    class_in_node = re.search("[" + conf_regex + "]*@([" + conf_regex + "]*)", line_value).group(1)
+  def construct(self, root):
+    name_in_node  = root.attrib["name"]
+    class_in_node = root.attrib["class"]
 
     self.node_name  = name_in_node
     self.node_class = class_in_node

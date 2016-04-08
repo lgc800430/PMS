@@ -46,8 +46,6 @@ class Cache:
                       , "RANDOM" : 2
                       }
 
-  config = {}
-
   @staticmethod
   def isCachereState(inputState):
     if inputState in Cache.stateCachere:
@@ -56,15 +54,12 @@ class Cache:
       print("Error: %s is not in stateCachere list" % inputState)
       exit(1)
 
-  @staticmethod
-  def getCfgByName(input_name):
-    return Cache.config[input_name]
-  @staticmethod
-  def setCfgByName(input_name, input_var):
+  def getCfgByName(self, input_name):
+    return self.config[input_name]
+  def setCfgByName(self, input_name, input_var):
     print("Warning: you should not use \"setCfgByName\"!")
-    Cache.config[input_name] = input_var
-  @staticmethod
-  def parseConfig():
+    self.config[input_name] = input_var
+  def parseConfig(self):
     input_str = GlobalVar.allcontents_conf
     input_cache = re.search("Cache_start([\w\s\n\*]*)Cache_end", input_str).group(1)
     # print(input_cache)
@@ -73,10 +68,10 @@ class Cache:
         pattern = icfg + "[\s]*([\w\*]*)"
         # print(iconfig, re.search(pattern, input_str).group(1))
         try:
-          Cache.config[icfg] = int(re.search(pattern, input_cache).group(1))
+          self.config[icfg] = int(re.search(pattern, input_cache).group(1))
         except ValueError:
           tempstr = re.search(pattern, input_cache).group(1)
-          Cache.config[icfg] = int(int(re.search("([\d]*)[\s]*[Xx]", tempstr).group(1)) * int(re.search("[Xx][\s]*([\d]*)", tempstr).group(1)))
+          self.config[icfg] = int(int(re.search("([\d]*)[\s]*[Xx]", tempstr).group(1)) * int(re.search("[Xx][\s]*([\d]*)", tempstr).group(1)))
         except:
           print("ConfigError\n")
           exit(-1)
@@ -88,30 +83,29 @@ class Cache:
         if (not GlobalVar.options.__dict__[user_cfg_str] == None):
 
           try:
-            Cache.config[icfg] = int(GlobalVar.options.__dict__[user_cfg_str])
+            self.config[icfg] = int(GlobalVar.options.__dict__[user_cfg_str])
           except ValueError:
             tempstr = str(GlobalVar.options.__dict__[user_cfg_str])
-            Cache.config[icfg] = int(int(re.search("([\d]*)[\s]*[Xx]", tempstr).group(1)) * int(re.search("[Xx][\s]*([\d]*)", tempstr).group(1)))
+            self.config[icfg] = int(int(re.search("([\d]*)[\s]*[Xx]", tempstr).group(1)) * int(re.search("[Xx][\s]*([\d]*)", tempstr).group(1)))
           except:
             print("VLC user_ConfigError\n")
             exit(-1)
 
         # print(tempstr, re.search("(\d)*\*", tempstr).group(1)), int(re.search("\*(\d)*", tempstr).group(1))
         # print(self.config[iconfig])
-  @staticmethod
-  def checkConfig():
-    Cache.config["subblocknum"] = int(Cache.getCfgByName("blocksize") / Cache.getCfgByName("subblocksize"))
-    Cache.config["blocknum"]    = int(Cache.getCfgByName("cachesize") / (Cache.getCfgByName("blocksize") * Cache.getCfgByName("assoc")))
+  # def checkConfig(self):
+    # self.config["subblocknum"] = int(Cache.getCfgByName("blocksize") / Cache.getCfgByName("subblocksize"))
+    # self.config["blocknum"]    = int(Cache.getCfgByName("cachesize") / (Cache.getCfgByName("blocksize") * Cache.getCfgByName("assoc")))
 
-    if (Cache.getCfgByName("blocknum") == 0):
-      print("ICache Error: blocknum = 0")
-      exit(-1)
-    if (Cache.getCfgByName("subblocknum") == 0):
-      print("ICache Error: subblocknum = 0")
-      exit(-1)
-    # for iconfig in Cache.configlist:
-    #   print("%-20s"%(iconfig + ":"), end="")
-    #   print(Cache.getCfgByName(iconfig))
+    # if (Cache.getCfgByName("blocknum") == 0):
+      # print("ICache Error: blocknum = 0")
+      # exit(-1)
+    # if (Cache.getCfgByName("subblocknum") == 0):
+      # print("ICache Error: subblocknum = 0")
+      # exit(-1)
+    # # for iconfig in Cache.configlist:
+    # #   print("%-20s"%(iconfig + ":"), end="")
+    # #   print(Cache.getCfgByName(iconfig))
 
   #*************awefasdfasasd****************
 
@@ -220,6 +214,8 @@ class Cache:
       return Cache.isCachereState("CACHE_MISS")
 
   def initialize(self):
+    ### parseConfig xml ###
+    self.parseConfig()
     self.initAttribute()
     # create association of cache
     for iassoc in range(0, Cache.getCfgByName("assoc")):
@@ -233,6 +229,8 @@ class Cache:
       self.RRptr = 0
 
   def __init__(self):
+    self.config = {}
+  
     self.attribute  = {}
     self.cacheAssoc = []
     self.RRptr      = 0  #RR pointer for replacement
@@ -259,8 +257,8 @@ class Cache:
         assert (not cur_transaction.destination_list == None ), ("not cur_transaction.destination_list == None")
         self.cache_outsdng.append(cur_transaction)
         ### len(self.cache_outsdng) must < len(outsdng) in VLC ###
-        from VLC import VLC
-        assert (len(self.cache_outsdng) <= VLC.getCfgByName("outsdng")), ("len(self.cache_outsdng) %d < len(VLC.getCfgByName(\"outsdng\")) %d" % (len(self.cache_outsdng), VLC.getCfgByName("outsdng")))
+        # from VLC import VLC
+        # assert (len(self.cache_outsdng) <= VLC.getCfgByName("outsdng")), ("len(self.cache_outsdng) %d < len(VLC.getCfgByName(\"outsdng\")) %d" % (len(self.cache_outsdng), VLC.getCfgByName("outsdng")))
         
   def cur_cycle(self):
     for i_cache_outsdng in self.cache_outsdng:
@@ -272,9 +270,11 @@ class Cache:
         cache_re = self.findCache(my_req.subblockaddr)
         ### cache MISS ###
         if (cache_re == None):
-          i_cache_outsdng.state = Transaction.isTransactionState("COMMITTED")
+          ### OUTSTANDING meaning for need to send to back ###
+          i_cache_outsdng.state = Transaction.isTransactionState("OUTSTANDING")
         ### cache HIT ###  
         else:
+          ### COMMITTED meaning for need to sendback to front ###
           i_cache_outsdng.state = Transaction.isTransactionState("COMMITTED")
     
   def pos_cycle(self):

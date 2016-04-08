@@ -23,8 +23,8 @@ from GlobalVar import GlobalVar
 
 class Topology:
 
-  configlist        = [ "Topology"
-                      ]
+  # configlist        = [ "Topology"
+                      # ]
 
 
 
@@ -36,33 +36,29 @@ class Topology:
 
 
   def parseConfig(self):
-    input_topology = re.search("Topology_start([" + GlobalVar.conf_s_regex + "]*)Topology_end", GlobalVar.allcontents_conf).group(1)
-    # print(input_topology)
+    Topology_root = ""
+    
+    self.topology_name = "vtile0"
+    
+    for Topology_root in GlobalVar.allcontents_conf.iter('Topology'):
+      # print(Topology_root.tag, Topology_root.attrib, Topology_root.attrib["name"])
+      self.topology_name = Topology_root.attrib["name"]
+      for sub_tag in Topology_root:
 
-    input_list = re.findall("[\s]*([" + GlobalVar.conf_s_regex + "]+?)[\s]*\n", input_topology)
+        class_type = sub_tag.tag
 
-    for i_line in input_list:
-      conf_regex = GlobalVar.conf_regex
-      line_attri = re.search("([" + conf_regex + "]*)[\s]*[" + conf_regex + "]*", i_line).group(1)
-      line_value = re.search("[" + conf_regex + "]*[\s]*([" + conf_regex + "]*)", i_line).group(1)
-
-      if(line_attri == "Topology"):
-        self.topology_name = line_value
-      elif(line_attri == "Node"):
-        # tmp_node = Node()
-        tmp_node = Node()
-        self.node_dist[tmp_node.construct(line_value)] = tmp_node
-      elif(line_attri == "Bus"):
-        # tmp_bus = Bus()
-        tmp_bus = Bus()
-        self.bus_dist[tmp_bus.construct(line_value)] = tmp_bus
-      elif(line_attri == "Port"):
-        # tmp_port = Port()
-        tmp_port = Port()
-        self.port_dist[tmp_port.construct(line_value)] = tmp_port
-      else:
-        print("NB: error at config file topology description = ", line_attri, line_value)
-        exit(-1)
+        if(class_type == "Node"):
+          tmp_node = Node()
+          self.node_dist[tmp_node.construct(sub_tag)] = tmp_node
+        elif(class_type == "Bus"):
+          tmp_bus = Bus()
+          self.bus_dist[tmp_bus.construct(sub_tag)] = tmp_bus
+        elif(class_type == "Port"):
+          tmp_port = Port()
+          self.port_dist[tmp_port.construct(sub_tag)] = tmp_port
+        else:
+          print("NB: error at config file topology description = ", class_type, sub_tag)
+          exit(-1)
 
 
 

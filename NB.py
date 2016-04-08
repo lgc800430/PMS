@@ -37,11 +37,11 @@ if __name__ == "__main__":
   print("Topology start")
 
 
-  Cache.parseConfig()
-  VLC.parseConfig()
+  # Cache.parseConfig()
+  # VLC.parseConfig()
 
-  Cache.checkConfig()
-  VLC.checkConfig()
+  # Cache.checkConfig()
+  # VLC.checkConfig()
 
   GlobalVar.topology_ptr = Topology()
   GlobalVar.topology_ptr.parseConfig()

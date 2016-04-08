@@ -9,6 +9,8 @@ import inspect
 import math
 import random
 from datetime import datetime
+import xml.etree.cElementTree as ET
+from xml import *
 
 
 class GlobalVar:
@@ -38,7 +40,7 @@ class GlobalVar:
     parser.add_option("--Dflag"         , action="store_true", dest="Dflag")
     parser.add_option("--Sproc"         , action="store_true", dest="Sproc")
     # Input Parser
-    parser.add_option("-c","--config"   , action="store"     , dest="input_conf"  , default="MT6296_Program_Memory_Simulator.config")
+    parser.add_option("-c","--config"   , action="store"     , dest="input_conf"  , default="MT6296_Program_Memory_Simulator.xml")
     # parser.add_option("-a","--assembly" , action="store"     , dest="input_asm"   , default="ELBRUS_PCB01_ELBRUS_S00_DOUBLE_ICC_IMC.disasm")
     parser.add_option("-a","--assembly" , action="store"     , dest="input_asm"   , default="ICC_IMC.txt")
     default_trace = ""
@@ -50,11 +52,6 @@ class GlobalVar:
     # parser.add_option("-t","--trace"    , action="store"     , dest="input_trc"   , default=default_trace)
     parser.add_option("-t","--trace"    , action="store"     , dest="input_trc"   , default="icc.txt,imc.txt")
     parser.add_option("-o","--output"   , action="store"     , dest="output_re"   , default="output.txt")
-    #Architecture Config
-    parser.add_option("--threadnum"     , action="store"     , dest="user_threadnum")
-    parser.add_option("--threadlist"    , action="store"     , dest="user_threadlist")
-    parser.add_option("--threadpriority", action="store"     , dest="user_threadpriority")
-    parser.add_option("--vtilenum"      , action="store"     , dest="user_vtilenum")
     #Cache Config
     parser.add_option("--cachesize"     , action="store"     , type="string"      , dest="user_cachesize")
     parser.add_option("--assoc"         , action="store"     , dest="user_assoc")
@@ -70,8 +67,7 @@ class GlobalVar:
     parser.add_option("--depth"         , action="store"     , dest="user_depth")
     parser.add_option("--entrysize"     , action="store"     , dest="user_entrysize")
     parser.add_option("--outsdng"       , action="store"     , dest="user_outsdng")
-    parser.add_option("--PBUS_bandwidth", action="store"     , dest="user_PBUS_bandwidth")
-    parser.add_option("--PBUS_priority" , action="store"     , dest="user_PBUS_priority")
+    parser.add_option("--Trace_idx"     , action="store"     , dest="user_Trace_idx")
 
     (GlobalVar.options, args) = parser.parse_args()
 
@@ -86,11 +82,12 @@ class GlobalVar:
       print("Error :Assembly file '%1s' does not exist, please check." % GlobalVar.options.input_asm)
       exit(1)
 
-    input_conf_ptr      = open(GlobalVar.options.input_conf, "r")
+    # input_conf_ptr      = open(GlobalVar.options.input_conf, "r")
     input_asm_ptr       = open(GlobalVar.options.input_asm , "r")
 
 
-    GlobalVar.allcontents_conf = re.sub("#.*", "", input_conf_ptr.read())
+    tree = ET.parse(GlobalVar.options.input_conf)
+    GlobalVar.allcontents_conf = tree.getroot()
     GlobalVar.allcontents_asm  = re.sub("//[\w \t\.,_\|]*", "" , input_asm_ptr.read())
 
     input_trc_list            = []
@@ -108,7 +105,6 @@ class GlobalVar:
     for i_trc_ptr in input_trc_list_ptr:
       GlobalVar.allcontents_trc.append(i_trc_ptr.read())
 
-    input_conf_ptr.close()
     input_asm_ptr.close()
     for i_trc in range(len(input_trc_list)):
       input_trc_list_ptr[i_trc].close()

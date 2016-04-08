@@ -17,7 +17,7 @@ from GlobalVar import *
 from PCTracer import *
 from Transaction import *
 
-dbg_queue = Queue()
+dbg_put_queue = Queue()
 dbg_del_queue = Queue()
 INITIAL  = -1
 ONGO     = -2 
@@ -36,13 +36,14 @@ class VLC:
                       , "VLC_NEXT_INST_WHOLE_MISS" ]
   configlist        = [ "depth"
                       , "entrysize"
-                      , "outsdng" ]
+                      , "outsdng" 
+                      , "Trace_idx"]
   attributelist     = [ "misscount"
                       , "accesscount"
                       , "hitcount"
                       , "VLC_FIFO_EMPTY"
                       , "VLC_FIFO_EMPTY_AVG" ]
-  config = {}
+  
 
   @staticmethod
   def isVLCreState(inputState):
@@ -50,53 +51,64 @@ class VLC:
     return inputState
 
   @staticmethod
-  def getCfgByName(input_name):
-    return VLC.config[input_name]
+  def convertByteAddrToSubblockAddr(byte_addr, subblocksize):
+    return int(byte_addr/(subblocksize))
 
-  @staticmethod
-  def setCfgByName(input_name, input_var):
+    
+  def getCfgByName(self, input_name):
+    return self.config[input_name]
+
+  def setCfgByName(self, input_name, input_var):
     print("Warning: you should not use \"setCfgByName\"!")
-    VLC.config[input_name] = input_var
+    self.config[input_name] = input_var
 
-  @staticmethod
-  def parseConfig():
-    input_str = GlobalVar.allcontents_conf
-    input_VLC = re.search("VLC_start([\w\s\n\*]*)VLC_end", input_str).group(1)
-    # print(input_VLC)
-    for iconfig in VLC.configlist:
-      pattern = iconfig + "[\s]*([\w\*]*)"
-      # print("pattern", pattern)
-      # print(iconfig, re.search(pattern, input_str).group(1))
-      try:
-        VLC.config[iconfig] = int(re.search(pattern, input_str).group(1))
-      except ValueError:
-        tempstr = re.search(pattern, input_str).group(1)
-        VLC.config[iconfig] = int(re.search("([\d]*)\*", tempstr).group(1)) * int(re.search("\*([\d]*)", tempstr).group(1))
-      except:
-        print("ConfigError\n")
-        exit(-1)
+  def parseConfig(self):
+    for VLC_root in GlobalVar.allcontents_conf.iter('VLC'):
+      for defult_tag in VLC_root.iter('defult'):
+        for sub_tag in defult_tag:
+    
+          assert(sub_tag.tag in VLC.configlist), ("%s is not in VLC.configlist " % sub_tag.tag)
+
+          try:
+            self.config[sub_tag.tag] = int(sub_tag.attrib["value"])
+          except ValueError:
+            tempstr = sub_tag.attrib["value"]
+            self.config[sub_tag.tag] = int(re.search("([\d]*)\*", tempstr).group(1)) * int(re.search("\*([\d]*)", tempstr).group(1))
+          except:
+            print("ConfigError\n")
+            exit(-1)
+    
+    for my_name_root in GlobalVar.allcontents_conf.iter(self.node_ptr.node_name):
+      for sub_tag in my_name_root:
+        assert(sub_tag.tag in VLC.configlist), ("%s is not in VLC.configlist " % sub_tag.tag)
+
+        try:
+          self.config[sub_tag.tag] = int(sub_tag.attrib["value"])
+        except ValueError:
+          tempstr = sub_tag.attrib["value"]
+          self.config[sub_tag.tag] = int(re.search("([\d]*)\*", tempstr).group(1)) * int(re.search("\*([\d]*)", tempstr).group(1))
+        except:
+          print("ConfigError\n")
+          exit(-1)
+    
+    
     # user specify
     for icfg in VLC.configlist:
       user_cfg_str = "user_" + icfg
       if (not GlobalVar.options.__dict__[user_cfg_str] == None):
         try:
-          VLC.config[icfg] = int(GlobalVar.options.__dict__[user_cfg_str])
+          self.config[icfg] = int(GlobalVar.options.__dict__[user_cfg_str])
         except ValueError:
-          VLC.config[icfg] = str(GlobalVar.options.__dict__[user_cfg_str])
+          self.config[icfg] = str(GlobalVar.options.__dict__[user_cfg_str])
         except:
           print("VLC user_ConfigError\n")
           exit(-1)
 
-  @staticmethod
-  def checkConfig():
-    # CheckConfig the relation between VLC and VLC
-    if (not int((VLC.getCfgByName("entrysize") == Cache.getCfgByName("subblocksize")))):
-      print("ICache Error: entrysize != subblocksize")
-      exit(-1)
-
-  @staticmethod
-  def convertByteAddrToSubblockAddr(byte_addr):
-    return int(byte_addr/Cache.getCfgByName("subblocksize"))
+  # def checkConfig():
+    # # CheckConfig the relation between VLC and VLC
+    # if (not int((VLC.getCfgByName("entrysize") == Cache.getCfgByName("subblocksize")))):
+      # print("ICache Error: entrysize != subblocksize")
+      # exit(-1)
 
   def getAtrByName(self, input_name):
     return self.attribute[input_name]
@@ -117,6 +129,10 @@ class VLC:
                                                  , int(self.getAtrByName("misscount"))/int(self.getAtrByName("accesscount")) * 100.0))
 
   def initInstList(self, input_asm):
+  
+    for subblocksize_root in GlobalVar.allcontents_conf.iter('subblocksize'):
+      subblocksize_value = int(subblocksize_root.attrib["value"])
+  
     # print(input_asm)
     start_point = input_asm.replace(re.search("([\w\s\.\-\:\[\]\n]*)start:", input_asm).group(1), "")
     # print(start_point)
@@ -141,8 +157,9 @@ class VLC:
         nowaddr      = int(nowaddr_16, 16)
         machine_code = re.search("^[\da-z]+[\s]+([\w ]+)   ", inlist).group(1)
         nowasm       = re.search("^[\da-z]+[\s]+[\w ]+   ([\w\d\.\-\:\[\]\| \t\-\,\_]*)", inlist).group(1)
-        addrlen      = int(machine_code.count(' ') + 1)
-        subaddr      = self.convertByteAddrToSubblockAddr(nowaddr)
+        # addrlen      = int(machine_code.count(' ') + 1)
+        addrlen      = int(len(re.findall("[0-9A-Za-z]+", machine_code)))
+        subaddr      = self.convertByteAddrToSubblockAddr(nowaddr, subblocksize_value)
 
         self.instbyteaddr2listindex[nowaddr] = instnum
         self.instList.append((Inst(instnum, addrlen, nowaddr, machine_code, nowtag, tagnum, nowasm, subaddr)))
@@ -153,7 +170,7 @@ class VLC:
 
     # subblocklist handle
     subblock = 0
-    subblocksize = Cache.getCfgByName("subblocksize")
+    subblocksize = subblocksize_value
     iinst = 0
     while (iinst < len(self.instList)):
       while (subblocksize > 0 and iinst < len(self.instList)):
@@ -168,9 +185,9 @@ class VLC:
       if (subblocksize < 0):
         self.instList[iinst-1].subblocklist.append(subblock)
         # self.instList[iinst-1].subblocklist.append(int(subblocksize*-1))
-        subblocksize = Cache.getCfgByName("subblocksize") +  subblocksize
+        subblocksize = subblocksize_value +  subblocksize
       else:
-        subblocksize = Cache.getCfgByName("subblocksize")
+        subblocksize = subblocksize_value
 
   def compareNextInst(self, input_nextinst):
     re = ""
@@ -221,12 +238,9 @@ class VLC:
         assert(re_resetEntryBySubblock)
         ### prefetch the next subblockaddr (VLC prefetch) ###
         self.subblock_queue.put(self.instList[self.instptr].subblockaddr + VLC.getCfgByName("depth"))
-        dbg_queue.put(self.instList[self.instptr].subblockaddr + VLC.getCfgByName("depth"))
+        dbg_put_queue.put(self.instList[self.instptr].subblockaddr + VLC.getCfgByName("depth"))
       ### self.instptr incre ###
       self.instptr      += 1
-    
-    
-    
 
   def findFreeEntryandFill(self):
     ''' find a free Entry, if not just return with nothing
@@ -284,7 +298,7 @@ class VLC:
     for i_outsdnglist in self.outsdnglist:
       ### fill subblock_queue the flush num ###
       self.subblock_queue.put(wanted_insthead + self.outsdnglist.index(i_outsdnglist))
-      dbg_queue.put(wanted_insthead + self.outsdnglist.index(i_outsdnglist))
+      dbg_put_queue.put(wanted_insthead + self.outsdnglist.index(i_outsdnglist))
     return
 
   def calStallTime(self):
@@ -294,24 +308,26 @@ class VLC:
 
   def initialize(self):
     input_asm = GlobalVar.allcontents_asm
+    
+    self.parseConfig()
     self.initAttribute()
     self.initInstList(input_asm)
     # create association of VLC
-    for ientry in range(VLC.getCfgByName("depth")):
+    for ientry in range(self.getCfgByName("depth")):
       self.vlcEntry.append(-1)
 
-    for ioutsdnglist in range(VLC.getCfgByName("outsdng")):
+    for ioutsdnglist in range(self.getCfgByName("outsdng")):
       self.outsdnglist.append(Request())
 
     self.subblock_queue = Queue()
 
-    input_VLC_instance = re.search(self.node_ptr.node_name + "_start([\w\s\n\*]*)" + self.node_ptr.node_name + "_end", GlobalVar.allcontents_conf).group(1)
-    Trace_idx = re.search("Trace_idx[\s]*([\d]*)", input_VLC_instance).group(1)
     # for every VLC there is a PCTracker
     self.PCTracer_ptr = PCTracer()
-    self.PCTracer_ptr.initialize(int(Trace_idx))
+    self.PCTracer_ptr.initialize(int(self.getCfgByName("Trace_idx")))
 
   def __init__(self):
+  
+    self.config = {}
     ### pointer back to Node obj ###
     self.node_ptr = None
 
@@ -345,6 +361,13 @@ class VLC:
     myPCTracer = self.PCTracer_ptr
     myPCTracer.transPCTracerNextState("PCTracer_ASSIGN_PC")
 
+  
+    
+  '''
+  VLC pre_cycle
+  receive transaction from port_BN_trans
+  
+  '''
   def pre_cycle(self):
     myPCTracer = self.PCTracer_ptr
     # for VLC input PClist check
@@ -362,8 +385,10 @@ class VLC:
         myreq = cur_transaction.source_req
         assert (myreq.state == Request.isRequestState("OUTSTANDING")), ("fatal error myreq.state == %s" % myreq.state)
         if(not myreq.flushed == True):
-          myreq.state = Request.isRequestState("COMMITTED")
+          assert (self.vlcEntry[myreq.ID] == ONGO), ("self.vlcEntry[myreq.ID] != ONGO(-2) = %s" %self.vlcEntry[myreq.ID])
           self.vlcEntry[myreq.ID] = myreq.subblockaddr
+        ### reaet the outstdng item ###
+        myreq.resetAttribute()
         
   def cur_cycle(self):
     myPCTracer = self.PCTracer_ptr
