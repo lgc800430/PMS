@@ -68,7 +68,8 @@ class GlobalVar:
     parser.add_option("--entrysize"     , action="store"     , dest="user_entrysize")
     parser.add_option("--outsdng"       , action="store"     , dest="user_outsdng")
     parser.add_option("--Trace_idx"     , action="store"     , dest="user_Trace_idx")
-
+    #TCM Config
+    parser.add_option("--TCMdelay"      , action="store"     , dest="user_TCMdelay")
     (GlobalVar.options, args) = parser.parse_args()
 
 

@@ -12,10 +12,9 @@ class Bus:
     ### bus_port_arbitor ###
     self.bus_port_arbitor  = {}
 
-  def construct(self, line_value):
-    conf_regex    = GlobalVar.conf_regex
-    name_in_node  = re.search("([" + conf_regex + "]*)@[" + conf_regex + "]*", line_value).group(1)
-    self.bus_name = name_in_node
+  def construct(self, root):
+    name_in_bus  = root.attrib["name"]
+    self.bus_name = name_in_bus
     return self.bus_name
 
   def initial_cycle(self):
@@ -27,7 +26,9 @@ class Bus:
     for key, value in self.bus_port_dist.items():
       if( len(value.port_NB_trans) > 0):
         ### there should be only one item in port_NB_trans of each port ###
-        assert (len(value.port_NB_trans) == 1), ("len(value.port_NB_trans) == ", len(value.port_NB_trans))
+        # assert (len(value.port_NB_trans) == 1), (key, value.port_name, "len(value.port_NB_trans) == ", len(value.port_NB_trans))
+        if(len(value.port_NB_trans) > 1):
+          print(key, value.port_name, "len(value.port_NB_trans) == ", len(value.port_NB_trans))
         ### get the transaction ###
         cur_transaction = value.port_NB_trans[TOPPEST]
         del value.port_NB_trans[TOPPEST]
@@ -60,7 +61,7 @@ class Bus:
             break
         ### handle the toppest one transaction which state is "WAIT" & counter is 0 only ###
         if(not cur_transaction == None):
-          self.bus_port_dist[key + "_PBUS"].port_BN_trans.append(cur_transaction)
+          self.bus_port_dist[key + "_" + self.bus_name].port_BN_trans.append(cur_transaction)
 
 
 

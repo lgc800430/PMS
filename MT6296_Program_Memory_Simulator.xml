@@ -1,60 +1,64 @@
 <!-- This is the Program Memory System Simulator configuration file -->
 <PMS_ROOT>
 
-<Simuli>
-<!-- 
-<Trace    value = "icc_pm_profiling_35525_shift00000000.txt,imc_pm_profiling_35525_shift0001e734.txt,icc_pm_profiling_35515_shift00042f3b.txt,imc_pm_profiling_35515_shift0006166f.txt">
-<Assembly value = "ELBRUS_PCB01_ELBRUS_S00_DOUBLE_ICC_IMC.disasm">
- -->
-  <Trace    value="icc.txt,imc.txt"/>
-  <Assembly value="ICC_IMC.txt"/>
-</Simuli>
+  <Simuli>
+  <!-- 
+  <Trace    value = "icc_pm_profiling_35525_shift00000000.txt,imc_pm_profiling_35525_shift0001e734.txt,icc_pm_profiling_35515_shift00042f3b.txt,imc_pm_profiling_35515_shift0006166f.txt">
+  <Assembly value = "ELBRUS_PCB01_ELBRUS_S00_DOUBLE_ICC_IMC.disasm">
+   -->
+    <Trace    value="icc.txt,imc.txt"/>
+    <Assembly value="ICC_IMC.txt"/>
+  </Simuli>
 
-<Topology name = "vtile">
-  <Node name="VLCFIFO_0"       class="VLC"                 />
-  <Node name="VLCFIFO_1"       class="VLC"                 />
-  <Node name="SIC"             class="Cache"               />
-  <Node name="SPM"             class="Cache"               />
-  <Bus  name="PBUS"                                        />
-  <Bus  name="AXI"                                         />
-  <Port name="VLCFIFO_0_PBUS"  node="VLCFIFO_0" bus="PBUS" />
-  <Port name="VLCFIFO_1_PBUS"  node="VLCFIFO_1" bus="PBUS" />
-  <Port name="SIC_PBUS"        node="SIC"       bus="PBUS" />
-  <Port name="SIC_AXI"         node="SIC"       bus="AXI"  />
-  <Port name="SPM_AXI"         node="SPM"       bus="AXI"  />
-</Topology>
+  <Topology name = "vtile">
+    <!-- first step)  Bus description -->
+    <Node name="VLCFIFO_0"       class="VLC"      node_higher_bus="None"  node_lower_bus="PBUS" node_lower_node="SIC" />
+    <Node name="VLCFIFO_1"       class="VLC"      node_higher_bus="None"  node_lower_bus="PBUS" node_lower_node="SIC" />
+    <Node name="SIC"             class="Cache"    node_higher_bus="PBUS"  node_lower_bus="AXI"  node_lower_node="SPM"  />
+    <Node name="SPM"             class="TCM"      node_higher_bus="AXI"   node_lower_bus="None" node_lower_node="None" />
+    <!-- second step) Node description -->
+    <!-- multiaccess= the ability of arbitration -->
+    <Bus  name="PBUS"            multiaccess="1"             />
+    <Bus  name="AXI"             multiaccess="1"             />
+    <!-- third step) Node description -->
+    <Port name="VLCFIFO_0_PBUS"  node="VLCFIFO_0" bus="PBUS" />
+    <Port name="VLCFIFO_1_PBUS"  node="VLCFIFO_1" bus="PBUS" />
+    <Port name="SIC_PBUS"        node="SIC"       bus="PBUS" />
+    <Port name="SIC_AXI"         node="SIC"       bus="AXI"  />
+    <Port name="SPM_AXI"         node="SPM"       bus="AXI"  />
+  </Topology>
 
-<!-- VLC config between VLC_start and VLC_end -->
-<VLC>
-  <defult>
-    <depth      value="2"  />
-    <entrysize  value="16" />        <!-- Bytes -->
-    <outsdng    value="2"  />        <!-- outstanding number -->
-    <Trace_idx  value="0"  />
-  </defult>
+  <!-- VLC config between VLC_start and VLC_end -->
+  <VLC>
+    <defult>
+      <depth      value="2"  />
+      <entrysize  value="16" />        <!-- Bytes -->
+      <outsdng    value="2"  />        <!-- outstanding number -->
+      <Trace_idx  value="0"  />
+    </defult>
 
-  <VLCFIFO_0>
-    <Trace_idx  value="0"/>
-  </VLCFIFO_0>
-  <VLCFIFO_1>
-    <Trace_idx  value="1"/>
-  </VLCFIFO_1>
-  
-</VLC>
+    <VLCFIFO_0>
+      <Trace_idx  value="0"/>
+    </VLCFIFO_0>
+    <VLCFIFO_1>
+      <Trace_idx  value="1"/>
+    </VLCFIFO_1>
+    
+  </VLC>
 
-<!-- cache config between Cache_start and Cache_end -->
-<Cache>
-  <defult>
-    <cachesize    value="16x1024"/>
-    <assoc        value="1"      />      <!-- 1 for direct mapped   -->
-    <blocksize    value="128"    />      <!-- Bytes                 -->
-    <subblocksize value="16"     />      <!-- Bytes                 -->
-    <hitdelay     value="1"      />      <!-- cycle                 -->
-    <misspenalty  value="20"     />      <!-- cycle                 -->
-    <replacement  value="1"      />      <!-- 0:RR  1:LRU  2:RANDOM -->
-    <prefetch     value="1"      />           
-    <outsdng      value="2"      />      <!-- outstanding number -->
-  </defult>
-</Cache>
+  <!-- cache config between Cache_start and Cache_end -->
+  <Cache>
+    <defult>
+      <cachesize    value="16x1024"/>
+      <assoc        value="1"      />      <!-- 1 for direct mapped   -->
+      <blocksize    value="128"    />      <!-- Bytes                 -->
+      <subblocksize value="16"     />      <!-- Bytes                 -->
+      <hitdelay     value="1"      />      <!-- cycle                 -->
+      <misspenalty  value="20"     />      <!-- cycle                 -->
+      <replacement  value="1"      />      <!-- 0:RR  1:LRU  2:RANDOM -->
+      <prefetch     value="1"      />           
+      <outsdng      value="2"      />      <!-- outstanding number -->
+    </defult>
+  </Cache>
 
 </PMS_ROOT>

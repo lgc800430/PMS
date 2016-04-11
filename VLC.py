@@ -75,7 +75,7 @@ class VLC:
             tempstr = sub_tag.attrib["value"]
             self.config[sub_tag.tag] = int(re.search("([\d]*)\*", tempstr).group(1)) * int(re.search("\*([\d]*)", tempstr).group(1))
           except:
-            print("ConfigError\n")
+            print("VLC parseConfig Error\n")
             exit(-1)
     
     for my_name_root in GlobalVar.allcontents_conf.iter(self.node_ptr.node_name):
@@ -106,7 +106,7 @@ class VLC:
 
   # def checkConfig():
     # # CheckConfig the relation between VLC and VLC
-    # if (not int((VLC.getCfgByName("entrysize") == Cache.getCfgByName("subblocksize")))):
+    # if (not int((self.getCfgByName("entrysize") == Cache.getCfgByName("subblocksize")))):
       # print("ICache Error: entrysize != subblocksize")
       # exit(-1)
 
@@ -237,8 +237,8 @@ class VLC:
         re_resetEntryBySubblock = self.resetEntryBySubblock(self.instList[self.instptr].subblockaddr)
         assert(re_resetEntryBySubblock)
         ### prefetch the next subblockaddr (VLC prefetch) ###
-        self.subblock_queue.put(self.instList[self.instptr].subblockaddr + VLC.getCfgByName("depth"))
-        dbg_put_queue.put(self.instList[self.instptr].subblockaddr + VLC.getCfgByName("depth"))
+        self.subblock_queue.put(self.instList[self.instptr].subblockaddr + self.getCfgByName("depth"))
+        dbg_put_queue.put(self.instList[self.instptr].subblockaddr + self.getCfgByName("depth"))
       ### self.instptr incre ###
       self.instptr      += 1
 
@@ -466,17 +466,18 @@ class VLC:
     if (myPCTracer.PCpointer >= len(myPCTracer.PClist)):
       return
     ### find the "WAITTING" one in outsdnglist, make a transaction
-    for ioutsdnglist in range(VLC.getCfgByName("outsdng")):
+    for ioutsdnglist in range(self.getCfgByName("outsdng")):
       if(self.outsdnglist[ioutsdnglist].state == Request.isRequestState("WAIT")):
+        assert(not self.node_ptr.node_lower_bus == "None"), ("%s node_lower_bus = %s" %(self.node_ptr.node_name, self.node_ptr.node_lower_bus))
         ### mark this req in outsdnglist as OUTSTANDING state ###
         self.outsdnglist[ioutsdnglist].state = Request.isRequestState("OUTSTANDING")
         ### turn req to a new transaction ###
         tmp_transaction = Transaction()
-        tmp_transaction.source_node      = self.node_ptr
-        tmp_transaction.destination_list.append(GlobalVar.topology_ptr.node_dist["SIC"])
+        tmp_transaction.source_node = self.node_ptr
+        tmp_transaction.destination_list.append(GlobalVar.topology_ptr.node_dist[self.node_ptr.node_lower_node])
         tmp_transaction.duration_list.append(self.node_ptr)
         tmp_transaction.source_req = self.outsdnglist[ioutsdnglist]
         
-        self.node_ptr.node_port_dist[self.node_ptr.node_name + "_PBUS"].port_NB_trans.append(tmp_transaction)
+        self.node_ptr.node_port_dist[self.node_ptr.node_name + "_" + self.node_ptr.node_lower_bus ].port_NB_trans.append(tmp_transaction)
 
 

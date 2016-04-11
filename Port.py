@@ -32,17 +32,15 @@ class Port:
     self.port_BN_trans  = [] #BUS to Node list
 
 
-
-  def construct(self, line_value):
-    conf_regex = GlobalVar.conf_regex
-    name_in_port        = re.search("([" + conf_regex + "]*)@[" + conf_regex + "]*", line_value).group(1)
-    source_in_link      = re.search("[" + conf_regex + "]*@([" + conf_regex + "]*)<=>[" + conf_regex + "]*", line_value).group(1)
-    destination_in_link = re.search("[" + conf_regex + "]*@[" + conf_regex + "]*<=>([" + conf_regex + "]*)", line_value).group(1)
+  def construct(self, root):
+    name_in_port  = root.attrib["name"]
+    node_in_port = root.attrib["node"]
+    bus_in_port = root.attrib["bus"]
 
 
     # print(GlobalVar.topology_ptr)
-    link_node = GlobalVar.topology_ptr.node_dist[source_in_link]
-    link_bus  = GlobalVar.topology_ptr.bus_dist[destination_in_link]
+    link_node = GlobalVar.topology_ptr.node_dist[node_in_port]
+    link_bus  = GlobalVar.topology_ptr.bus_dist[bus_in_port]
 
     self.port_name            = name_in_port
     # tmp_port.port_ptr             = tmp_port
