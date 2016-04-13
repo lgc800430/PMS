@@ -275,6 +275,7 @@ class VLC:
       self.outsdnglist[free_outsdng].ID           = free_Entry
       self.outsdnglist[free_outsdng].state        = Request.isRequestState("WAIT")
       self.outsdnglist[free_outsdng].subblockaddr = item_subblock
+      self.outsdnglist[free_outsdng].source_node  = self.node_ptr
 
   def fillVLC(self, input_addr):
     pass

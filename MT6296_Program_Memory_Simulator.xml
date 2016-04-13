@@ -10,22 +10,24 @@
     <Assembly value="ICC_IMC.txt"/>
   </Simuli>
 
-  <Topology name = "vtile">
+  <Topology name = "PMS">
     <!-- first step)  Bus description -->
-    <Node name="VLCFIFO_0"       class="VLC"      node_higher_bus="None"  node_lower_bus="PBUS" node_lower_node="SIC" />
-    <Node name="VLCFIFO_1"       class="VLC"      node_higher_bus="None"  node_lower_bus="PBUS" node_lower_node="SIC" />
-    <Node name="SIC"             class="Cache"    node_higher_bus="PBUS"  node_lower_bus="AXI"  node_lower_node="SPM"  />
-    <Node name="SPM"             class="TCM"      node_higher_bus="AXI"   node_lower_bus="None" node_lower_node="None" />
+    <!-- Vtile0 -->
+    <Node name="VLCFIFO_0_V0"   node_delay="0"    class="VLC"      node_higher_bus="None"  node_lower_bus="PBUS" node_lower_node="SIC_V0"  />
+    <!-- <Node name="VLCFIFO_1_V0"   node_delay="0"    class="VLC"      node_higher_bus="None"  node_lower_bus="PBUS" node_lower_node="SIC_V0"  /> -->
+    <Node name="SIC_V0"         node_delay="0"    class="Cache"    node_higher_bus="PBUS"  node_lower_bus="AXI"  node_lower_node="SPM"     />
+    <!-- Vtile1 -->
+    <!-- <Node name="VLCFIFO_0_V1"   node_delay="0"    class="VLC"      node_higher_bus="None"  node_lower_bus="PBUS" node_lower_node="SIC_V1"  /> -->
+    <!-- <Node name="VLCFIFO_1_V1"   node_delay="0"    class="VLC"      node_higher_bus="None"  node_lower_bus="PBUS" node_lower_node="SIC_V1"  /> -->
+    <!-- <Node name="SIC_V1"         node_delay="0"    class="Cache"    node_higher_bus="PBUS"  node_lower_bus="AXI"  node_lower_node="SPM"     /> -->
+    
+    <Node name="SPM"            node_delay="0"    class="TCM"      node_higher_bus="AXI"   node_lower_bus="None" node_lower_node="None"    />
+    
     <!-- second step) Node description -->
-    <!-- multiaccess= the ability of arbitration -->
-    <Bus  name="PBUS"            multiaccess="1"             />
-    <Bus  name="AXI"             multiaccess="1"             />
-    <!-- third step) Node description -->
-    <Port name="VLCFIFO_0_PBUS"  node="VLCFIFO_0" bus="PBUS" />
-    <Port name="VLCFIFO_1_PBUS"  node="VLCFIFO_1" bus="PBUS" />
-    <Port name="SIC_PBUS"        node="SIC"       bus="PBUS" />
-    <Port name="SIC_AXI"         node="SIC"       bus="AXI"  />
-    <Port name="SPM_AXI"         node="SPM"       bus="AXI"  />
+    <!-- multiaccess= the ability of arbitration to any Node -->
+    <Bus  name="PBUS"           bus_delay="0"     multi_access="1"  />
+    <Bus  name="PBUS"           bus_delay="0"     multi_access="1"  />
+    <Bus  name="AXI"            bus_delay="0"     multi_access="1"  />
   </Topology>
 
   <!-- VLC config between VLC_start and VLC_end -->
@@ -37,14 +39,27 @@
       <Trace_idx  value="0"  />
     </defult>
 
-    <VLCFIFO_0>
+    <VLCFIFO_0_V0>
       <Trace_idx  value="0"/>
-    </VLCFIFO_0>
-    <VLCFIFO_1>
+    </VLCFIFO_0_V0>
+    <VLCFIFO_1_V0>
       <Trace_idx  value="1"/>
-    </VLCFIFO_1>
+    </VLCFIFO_1_V0>
     
   </VLC>
+
+  <!-- VLC config between VLC_start and VLC_end -->
+  <TCM>
+    <defult>
+      <TCMdelay   value="10"  />
+    </defult>
+
+    <SPM>
+      <TCMdelay   value="5"  />
+    </SPM>
+    
+  </TCM>  
+  
 
   <!-- cache config between Cache_start and Cache_end -->
   <Cache>

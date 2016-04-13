@@ -31,26 +31,38 @@ class Port:
     self.port_NB_trans  = [] #Node to BUS list
     self.port_BN_trans  = [] #BUS to Node list
 
+  ### target = node_higher_bus, node_lower_bus  ###
+  def construct(self, root, target):
+    # if(target == "node_higher_bus" and not root.attrib["node_higher_bus"] == "None"):
+    name_in_port = root.attrib["name"] + "_" + root.attrib[target]
+    node_in_port = root.attrib["name"]
+    bus_in_port  = root.attrib[target]
 
-  def construct(self, root):
-    name_in_port  = root.attrib["name"]
-    node_in_port = root.attrib["node"]
-    bus_in_port = root.attrib["bus"]
-
-
-    # print(GlobalVar.topology_ptr)
     link_node = GlobalVar.topology_ptr.node_dist[node_in_port]
     link_bus  = GlobalVar.topology_ptr.bus_dist[bus_in_port]
 
     self.port_name            = name_in_port
-    # tmp_port.port_ptr             = tmp_port
     self.port_belong_node_ptr = link_node
     self.port_belong_bus_ptr  = link_bus
 
-    
     link_node.node_port_dist[name_in_port] = self
     link_bus.bus_port_dist[name_in_port]   = self
-    return self.port_name
+    return name_in_port
+    # elif(target == "node_lower_bus" and not root.attrib["node_lower_bus"] == "None"):
+      # name_in_port = root.attrib["name"] + "_" + root.attrib["node_lower_bus"]
+      # node_in_port = root.attrib["name"]
+      # bus_in_port  = root.attrib["node_lower_bus"]
+
+      # link_node = GlobalVar.topology_ptr.node_dist[node_in_port]
+      # link_bus  = GlobalVar.topology_ptr.bus_dist[bus_in_port]
+
+      # self.port_name            = name_in_port
+      # self.port_belong_node_ptr = link_node
+      # self.port_belong_bus_ptr  = link_bus
+
+      # link_node.node_port_dist[name_in_port] = self
+      # link_bus.bus_port_dist[name_in_port]   = self
+      # return name_in_port
     
     
     

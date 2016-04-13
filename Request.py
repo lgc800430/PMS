@@ -18,6 +18,8 @@ class Request:
     self.ID           = -1     #which entry index
     self.counter      = -1
     self.subblockaddr = -1
+    
+    self.source_node = None
 
   def __init__(self):
     self.state        = Request.isRequestState("INITIAL")
@@ -25,5 +27,7 @@ class Request:
     self.ID           = -1     #which entry index
     self.counter      = -1
     self.subblockaddr = -1
+    
+    self.source_node = None
     
     

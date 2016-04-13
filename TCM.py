@@ -76,7 +76,7 @@ class TCM:
           exit(-1)
 
     
-    print(self.config)
+    # print(self.config)
 
   def getAtrByName(self, input_name):
     return self.attribute[input_name]
@@ -100,7 +100,7 @@ class TCM:
   
     self.attribute  = {}
     
-    ### outstanding list #outsdng list, req that has "been" issue ###
+    ### outstanding list in TCM ###
     self.TCM_outsdng = []
 
   def initial_cycle(self):
@@ -114,9 +114,10 @@ class TCM:
         ### get the transaction ###
         cur_transaction = value.port_BN_trans[TOPPEST]
         del value.port_BN_trans[TOPPEST]
-        ### set all transaction in bus_port_arbitor counter to exact value ###
         cur_transaction.duration_list.append(self.node_ptr)
-        cur_transaction.counter = 0
+        ### set all transaction in bus_port_arbitor counter to exact value ###
+        cur_transaction.counter = self.node_ptr.node_delay
+        assert (cur_transaction.state == Transaction.isTransactionState("INITIAL")), ("cur_transaction.state == INITIAL")
         cur_transaction.state = Transaction.isTransactionState("WAIT")
         assert (not cur_transaction.destination_list == None ), ("not cur_transaction.destination_list == None")
         self.TCM_outsdng.append(cur_transaction)
@@ -127,23 +128,18 @@ class TCM:
       if(i_TCM_outsdng.state == Transaction.isTransactionState("WAIT") and i_TCM_outsdng.counter > 0):
         i_TCM_outsdng.counter -= 1
       if(i_TCM_outsdng.state == Transaction.isTransactionState("WAIT") and i_TCM_outsdng.counter == 0):
-        my_req = i_TCM_outsdng.source_req
-        
-        ### must hit ###
-        i_TCM_outsdng.state = Transaction.isTransactionState("COMMITTED") 
-    
+        i_TCM_outsdng.state = Transaction.isTransactionState("COMMITTED")
+      
   def pos_cycle(self):
     for i_TCM_outsdng in self.TCM_outsdng:
       ### TCM HIT ###
       ### COMMITTED meaning for need to sendback to front ###
       if(i_TCM_outsdng.state == Transaction.isTransactionState("COMMITTED")):
-        my_req = i_TCM_outsdng.source_req
-        
         tmp_transaction = Transaction()
         tmp_transaction.source_node = self.node_ptr
         tmp_transaction.destination_list.append(i_TCM_outsdng.source_node)
         tmp_transaction.duration_list.append(self.node_ptr)
-        tmp_transaction.source_req = my_req
+        tmp_transaction.subblockaddr = i_TCM_outsdng.subblockaddr
         
         self.node_ptr.node_port_dist[self.node_ptr.node_name + "_" + self.node_ptr.node_higher_bus].port_NB_trans.append(tmp_transaction)
         del self.TCM_outsdng[self.TCM_outsdng.index(i_TCM_outsdng)]

@@ -2,7 +2,7 @@ __author__ = 'MTK07896'
 
 class Transaction:
   stateTransaction = ["INITIAL"       #initial state
-                    , "WAIT"          #wait for trigger
+                    , "WAIT"          #wait for trigger, wait for (counter == 0)
                     , "OUTSTANDING"   #OUTSTANDING
                     , "COMMITTED"     #wait for reset
                       ]
@@ -15,6 +15,7 @@ class Transaction:
   def resetAttribute(self):
     self.state             = Transaction.isTransactionState("INITIAL")
     self.counter           = -1
+    self.subblockaddr      = -1
     self.source_req        = None
     
     self.source_node       = None #source node
@@ -24,6 +25,7 @@ class Transaction:
   def __init__(self):
     self.state             = Transaction.isTransactionState("INITIAL")
     self.counter           = -1
+    self.subblockaddr      = -1
     self.source_req        = None
     
     self.source_node       = None #source node
