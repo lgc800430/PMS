@@ -18,7 +18,9 @@ from PCTracer import *
 from Transaction import *
 
 dbg_put_queue = Queue()
+dbg_ONGO_queue = Queue()
 dbg_del_queue = Queue()
+dbg_flush_queue = Queue()
 INITIAL  = -1
 ONGO     = -2 
 
@@ -250,7 +252,7 @@ class VLC:
     ### find free Entry###
     free_Entry = -1
     for ientry in self.vlcEntry:
-      if(ientry == -1):
+      if(ientry == INITIAL):
         free_Entry = self.vlcEntry.index(ientry)
         break
     ### return, if found no free Entry ###
@@ -269,6 +271,7 @@ class VLC:
 
     if(not self.subblock_queue.qsize() == 0):
       item_subblock = self.subblock_queue.get()
+      dbg_ONGO_queue.put(item_subblock)
       ### vlcEntry = -2 meaning this entry is ONGO, waiting for response ###
       self.vlcEntry[free_Entry]                   = -2
       self.outsdnglist[free_outsdng].resetAttribute()
@@ -282,12 +285,13 @@ class VLC:
 
   def resetvlcEntry(self):
     for ientry in range(0, len(self.vlcEntry)):
+      if(self.vlcEntry[ientry] > -1):dbg_flush_queue.put(self.vlcEntry[ientry])
       self.vlcEntry[ientry] = -1
 
   def flushVLC(self, input_addr):
     wanted_insthead  = self.instList[self.instbyteaddr2listindex[input_addr]].subblockaddr
     self.instptr     = self.instList[self.instbyteaddr2listindex[input_addr]].ID
-
+		
     # reset VLC fifo
     self.resetvlcEntry()
     
@@ -388,6 +392,8 @@ class VLC:
         if(not myreq.flushed == True):
           assert (self.vlcEntry[myreq.ID] == ONGO), ("self.vlcEntry[myreq.ID] != ONGO(-2) = %s" %self.vlcEntry[myreq.ID])
           self.vlcEntry[myreq.ID] = myreq.subblockaddr
+        else:
+          dbg_flush_queue.put(myreq.subblockaddr)
         ### reaet the outstdng item ###
         myreq.resetAttribute()
         

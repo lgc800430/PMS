@@ -178,7 +178,7 @@ class Cache:
     # print(myblock, mysubblock)
     for iassoc in self.cacheAssoc:
       if (iassoc.getCacheblock(myblock).getblockTag() == mytag):
-        if (iassoc.getCacheblock(myblock).getblockValid() == 1):
+        if (iassoc.getCacheblock(myblock).getblockValid() == 1 or iassoc.getCacheblock(myblock).cacheSubBlock[mysubblock].subblock_valid == 1):
           if (self.getCfgByName("replacement") == self.replacement["LRU"]):
             self.LRUlist.remove(iassoc.assoc_ID)
             self.LRUlist.insert(0, iassoc.assoc_ID)
@@ -251,7 +251,6 @@ class Cache:
       self.cacheAssoc[iassoc].cache_ptr = self
       self.cacheAssoc[iassoc].initializeAssoc(iassoc)
 
-
     if (self.getCfgByName("replacement") == self.replacement["LRU"]):
       for iassoc in range(0, self.getCfgByName("assoc")):
         self.LRUlist.append(iassoc)
@@ -266,10 +265,11 @@ class Cache:
     self.RRptr      = 0  #RR pointer for replacement
     self.LRUlist    = [] #LRU list for replacement
 
-    ### outstanding list in Cache ###
+    ### outstanding list in Cache from high (Transaction) ###
     self.cache_higher_outsdng = []
+    ### outstanding list in Cache from low (Transaction) ###
     self.cache_lower_outsdng = []
-
+    ### outstanding list in Cache (request) ###
     self.cache_outsdng_req = []
 
   def initial_cycle(self):
@@ -368,7 +368,7 @@ class Cache:
             tmp_transaction.duration_list.append(self.node_ptr)
             tmp_transaction.source_req = i_cache_outsdng_req
             self.node_ptr.node_port_dist[self.node_ptr.node_name + "_" + self.node_ptr.node_higher_bus].port_NB_trans.append(tmp_transaction)
-          del self.cache_outsdng_req[self.cache_outsdng_req.index(i_cache_outsdng_req)]
+            del self.cache_outsdng_req[self.cache_outsdng_req.index(i_cache_outsdng_req)]
         del self.cache_lower_outsdng[self.cache_lower_outsdng.index(i_cache_lower_outsdng)]
 
 #--------------------------------------------
