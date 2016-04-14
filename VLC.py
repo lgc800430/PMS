@@ -328,6 +328,7 @@ class VLC:
 
     # for every VLC there is a PCTracker
     self.PCTracer_ptr = PCTracer()
+    self.PCTracer_ptr.VLC_ptr = self
     self.PCTracer_ptr.initialize(int(self.getCfgByName("Trace_idx")))
 
   def __init__(self):

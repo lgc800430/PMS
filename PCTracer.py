@@ -26,7 +26,9 @@ class PCTracer:
 
     if GlobalVar.options.Sproc == True:
       if(self.PCpointer%10000 == 0):
-        print("PCpointer = ", self.PCpointer, len(self.PClist))
+        print("[%s] PCpointer = %s/%s" %(self.VLC_ptr.node_ptr.node_name, self.PCpointer, len(self.PClist)))
+    
+    print("[%s] PCpointer = %s/%s" %(self.VLC_ptr.node_ptr.node_name, self.PCpointer, len(self.PClist)))
 
     if (self.PCpointer == len(self.PClist)):
       return "PCend"
@@ -65,4 +67,6 @@ class PCTracer:
     self.PCTracer_nextState = 0
     self.PCTracer_state     = 0
     self.PCTracer_counter   = 0
+    
+    self.VLC_ptr = None
 

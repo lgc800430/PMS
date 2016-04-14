@@ -124,10 +124,18 @@ class Cache:
       print()
 
   def printCacheContentInfo(self, input_assoc):
+    self.printCacheInfo()
     if (input_assoc < 0):
       for iblock in range(0, self.getCfgByName("blocknum")):
+        print("idx:", iblock, end=" ")
         for iassoc in range(0, self.getCfgByName("assoc")):
+          print("way:", iassoc, end=" ")
+          print("t:", end=" ")
           print(self.cacheAssoc[iassoc].cacheblock[iblock].tag, end=", ")
+          print("v:", end=" ")
+          print(self.cacheAssoc[iassoc].cacheblock[iblock].valid, end=", ")
+          for isubblock in range(0, self.getCfgByName("subblocknum")):
+            print(self.cacheAssoc[iassoc].cacheblock[iblock].cacheSubBlock[isubblock].subblock_valid, end="")
         print()
       print()
     else:
@@ -143,14 +151,7 @@ class Cache:
     print("#Miss                =  %8d  (%f %%)"% (self.getAtrByName("misscount")
                                                  , int(self.getAtrByName("misscount"))/int(self.getAtrByName("accesscount")) * 100.0))
     print("#PrefetchAccess      =  %8d"% (self.getAtrByName("prefetchcount")))
-
-  def printCacheConfig(self):
-    print("========Cache Report=======")
-    print("#Access              =  %8d"% (self.getAtrByName("accesscount")))
-    print("#Hit                 =  %8d  (%f %%)"% (self.getAtrByName("hitcount")
-                                                ,  int(self.getAtrByName("hitcount"))/int(self.getAtrByName("accesscount")) * 100.0 ))
-    print("#Miss                =  %8d  (%f %%)"% (self.getAtrByName("misscount")
-                                                 , int(self.getAtrByName("misscount"))/int(self.getAtrByName("accesscount")) * 100.0))
+    
 
   def findCacheblockToRpl(self, subblock_address):
     myblock    = (subblock_address >> int(math.log(self.getCfgByName("subblocknum"), 2)) ) % self.getCfgByName("blocknum")
@@ -304,7 +305,6 @@ class Cache:
       if(i_cache_higher_outsdng.state == Cache.isCachereState("CACHE_WAIT") and i_cache_higher_outsdng.counter == 0):
         my_req = i_cache_higher_outsdng.source_req
         i_cache_higher_outsdng.state = self.accessCache(my_req.subblockaddr)
-        print("here", i_cache_higher_outsdng.source_node.node_name, i_cache_higher_outsdng.state, my_req.subblockaddr)
 
     for i_cache_lower_outsdng in self.cache_lower_outsdng:
       ### count down the counter for each transaction in cache_lower_outsdng ###
@@ -315,6 +315,7 @@ class Cache:
         i_cache_lower_outsdng.state = Cache.isCachereState("CACHE_WRITE_BACK")
 
   def pos_cycle(self):
+    ### cache_higher_outsdng ###
     for i_cache_higher_outsdng in self.cache_higher_outsdng:
       ### cache HIT ###
       ### COMMITTED meaning for need to sendback to front ###
@@ -356,10 +357,13 @@ class Cache:
         self.cache_outsdng_req.append(my_req)
         dbg_cache_outsdng_req.put(my_req.subblockaddr)
 
+    ### cache_lower_outsdng ###
     for i_cache_lower_outsdng in self.cache_lower_outsdng:
       ### cache WRITE BACK ###
       ### meaning for need to sendback to front ###
       if(i_cache_lower_outsdng.state == Cache.isCachereState("CACHE_WRITE_BACK")):
+        ### reply cache_outsdng_req ###
+        commit_cache_outsdng_req = []
         for i_cache_outsdng_req in self.cache_outsdng_req:
           if(i_cache_outsdng_req.subblockaddr == i_cache_lower_outsdng.subblockaddr):
             tmp_transaction = Transaction()
@@ -368,7 +372,13 @@ class Cache:
             tmp_transaction.duration_list.append(self.node_ptr)
             tmp_transaction.source_req = i_cache_outsdng_req
             self.node_ptr.node_port_dist[self.node_ptr.node_name + "_" + self.node_ptr.node_higher_bus].port_NB_trans.append(tmp_transaction)
-            del self.cache_outsdng_req[self.cache_outsdng_req.index(i_cache_outsdng_req)]
+        
+            commit_cache_outsdng_req.append(i_cache_outsdng_req)
+        ### del committed cache_outsdng_req ###
+        for i_commit_cache_outsdng_req in commit_cache_outsdng_req:
+          self.cache_outsdng_req.remove(i_commit_cache_outsdng_req)
+        
+        # del self.cache_outsdng_req[self.cache_outsdng_req.index(i_cache_outsdng_req)]
         del self.cache_lower_outsdng[self.cache_lower_outsdng.index(i_cache_lower_outsdng)]
 
 #--------------------------------------------

@@ -14,7 +14,7 @@
     <!-- first step)  Bus description -->
     <!-- Vtile0 -->
     <Node name="VLCFIFO_0_V0"   node_delay="0"    class="VLC"      node_higher_bus="None"  node_lower_bus="PBUS" node_lower_node="SIC_V0"  />
-    <!-- <Node name="VLCFIFO_1_V0"   node_delay="0"    class="VLC"      node_higher_bus="None"  node_lower_bus="PBUS" node_lower_node="SIC_V0"  /> -->
+    <Node name="VLCFIFO_1_V0"   node_delay="0"    class="VLC"      node_higher_bus="None"  node_lower_bus="PBUS" node_lower_node="SIC_V0"  />
     <Node name="SIC_V0"         node_delay="0"    class="Cache"    node_higher_bus="PBUS"  node_lower_bus="AXI"  node_lower_node="SPM"     />
     <!-- Vtile1 -->
     <!-- <Node name="VLCFIFO_0_V1"   node_delay="0"    class="VLC"      node_higher_bus="None"  node_lower_bus="PBUS" node_lower_node="SIC_V1"  /> -->
@@ -26,8 +26,7 @@
     <!-- second step) Node description -->
     <!-- multiaccess= the ability of arbitration to any Node -->
     <Bus  name="PBUS"           bus_delay="0"     multi_access="1"  />
-    <Bus  name="PBUS"           bus_delay="0"     multi_access="1"  />
-    <Bus  name="AXI"            bus_delay="0"     multi_access="1"  />
+    <Bus  name="AXI"            bus_delay="100"     multi_access="1"  />
   </Topology>
 
   <!-- VLC config between VLC_start and VLC_end -->
@@ -64,8 +63,8 @@
   <!-- cache config between Cache_start and Cache_end -->
   <Cache>
     <defult>
-      <cachesize    value="16x1024"/>
-      <assoc        value="1"      />      <!-- 1 for direct mapped   -->
+      <cachesize    value="6x128"/>
+      <assoc        value="2"      />      <!-- 1 for direct mapped   -->
       <blocksize    value="128"    />      <!-- Bytes                 -->
       <subblocksize value="16"     />      <!-- Bytes                 -->
       <hitdelay     value="1"      />      <!-- cycle                 -->

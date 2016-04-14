@@ -40,7 +40,11 @@ class NB_sim:
     self.initSimulate(u_topology)
     while (not self.isSimEnd()):
       self.run(u_topology)
-
+    
+    for key, value in u_topology.node_dist.items():
+      if(value.node_class == "Cache"):
+        value.node_ptr.printCacheContentInfo(-1)
+    
 
   def initSimulate(self, u_topology):
     # self.transPCSimNextState("ASSIGN_PC")
@@ -91,5 +95,7 @@ class NB_sim:
     
     print("current_CYC = ", self.current_CYC)
     self.current_CYC += 1
+    
+    
 
 
