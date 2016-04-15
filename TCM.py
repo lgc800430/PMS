@@ -26,10 +26,10 @@ class TCM:
   configlist      = [ "TCMdelay"
                     ]
 
-  attributelist   = [ "misscount"
-                    , "accesscount"
-                    , "prefetchcount"
-                    , "hitcount" ]
+  attributelist   = [ "MissCount"
+                    , "AccessCount"
+                    , "PrefetchCount"
+                    , "HitCount" ]
 
   @staticmethod
   def isTCMreState(inputState):
@@ -48,7 +48,7 @@ class TCM:
     for TCM_root in GlobalVar.allcontents_conf.iter('TCM'):
       for defult_tag in TCM_root.iter('defult'):
         for sub_tag in defult_tag:
-    
+
           assert(sub_tag.tag in TCM.configlist), ("%s is not in TCM.configlist " % sub_tag.tag)
 
           try:
@@ -75,7 +75,7 @@ class TCM:
           print("VLC user_ConfigError\n")
           exit(-1)
 
-    
+
     # print(self.config)
 
   def getAtrByName(self, input_name):
@@ -93,13 +93,13 @@ class TCM:
     ### parseConfig xml ###
     self.parseConfig()
     self.initAttribute()
-    
+
 
   def __init__(self):
     self.config = {}
-  
+
     self.attribute  = {}
-    
+
     ### outstanding list in TCM ###
     self.TCM_outsdng = []
 
@@ -121,7 +121,7 @@ class TCM:
         cur_transaction.state = Transaction.isTransactionState("WAIT")
         assert (not cur_transaction.destination_list == None ), ("not cur_transaction.destination_list == None")
         self.TCM_outsdng.append(cur_transaction)
-        
+
   def cur_cycle(self):
     for i_TCM_outsdng in self.TCM_outsdng:
       ### count down the counter for each transaction in TCM_outsdng ###
@@ -129,7 +129,7 @@ class TCM:
         i_TCM_outsdng.counter -= 1
       if(i_TCM_outsdng.state == Transaction.isTransactionState("WAIT") and i_TCM_outsdng.counter == 0):
         i_TCM_outsdng.state = Transaction.isTransactionState("COMMITTED")
-      
+
   def pos_cycle(self):
     for i_TCM_outsdng in self.TCM_outsdng:
       ### TCM HIT ###
@@ -140,6 +140,6 @@ class TCM:
         tmp_transaction.destination_list.append(i_TCM_outsdng.source_node)
         tmp_transaction.duration_list.append(self.node_ptr)
         tmp_transaction.subblockaddr = i_TCM_outsdng.subblockaddr
-        
+
         self.node_ptr.node_port_dist[self.node_ptr.node_name + "_" + self.node_ptr.node_higher_bus].port_NB_trans.append(tmp_transaction)
         del self.TCM_outsdng[self.TCM_outsdng.index(i_TCM_outsdng)]

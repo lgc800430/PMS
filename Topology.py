@@ -18,7 +18,7 @@ from VLC import *
 from PCTracer import *
 from Simulator import *
 from GlobalVar import GlobalVar
-
+from collections import OrderedDict
 
 
 class Topology:
@@ -46,6 +46,12 @@ class Topology:
         elif(class_type == "Bus"):
           tmp_bus = self.bus_dist[sub_tag.attrib["name"]]
           tmp_bus.construct(sub_tag)
+    
+    self.node_dist = OrderedDict(sorted(self.node_dist.items()))
+    self.bus_dist = OrderedDict(sorted(self.bus_dist.items()))
+    self.port_dist = OrderedDict(sorted(self.port_dist.items()))
+    
+    
     
   def parseConfig(self):
     Topology_root = ""

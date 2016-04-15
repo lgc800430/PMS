@@ -17,10 +17,10 @@ class Architecture:
                       , "vtilenum"
                       ]
 
-  # attributelist     = [ "misscount"
-  #                     , "accesscount"
-  #                     , "prefetchcount"
-  #                     , "hitcount" ]
+  # attributelist     = [ "MissCount"
+  #                     , "AccessCount"
+  #                     , "PrefetchCount"
+  #                     , "HitCount" ]
 
   config = {}
 

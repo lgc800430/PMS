@@ -25,6 +25,7 @@ class Cache:
                       , "CACHE_HIT" 
                       , "CACHE_MISS" 
                       , "CACHE_ONGO_MISS"
+                      , "CACHE_ONGO_HIT"
                       , "CACHE_WRITE_BACK"
                       ]
 
@@ -39,13 +40,15 @@ class Cache:
                       , "misspenalty"
                       , "replacement"
                       , "prefetch"
-                      , "outsdng"
+                      # , "outsdng"
                       ]
 
-  attributelist     = [ "misscount"
-                      , "accesscount"
-                      , "prefetchcount"
-                      , "hitcount" ]
+  attributelist     = [ "MissCount"
+                      , "AccessCount"
+                      , "PrefetchCount"
+                      , "HitCount"
+                      , "OngoMissCount"
+                      , "OngoHitCount"                      ]
 
   replacement       = { "RR"     : 0
                       , "LRU"    : 1
@@ -125,17 +128,19 @@ class Cache:
 
   def printCacheContentInfo(self, input_assoc):
     self.printCacheInfo()
+    print("======== [ %s ] Cache Content =======" %self.node_ptr.node_name)
     if (input_assoc < 0):
       for iblock in range(0, self.getCfgByName("blocknum")):
-        print("idx:", iblock, end=" ")
+        print("Idx", iblock, end="   ")
         for iassoc in range(0, self.getCfgByName("assoc")):
-          print("way:", iassoc, end=" ")
-          print("t:", end=" ")
-          print(self.cacheAssoc[iassoc].cacheblock[iblock].tag, end=", ")
-          print("v:", end=" ")
-          print(self.cacheAssoc[iassoc].cacheblock[iblock].valid, end=", ")
+          print("    ", end="")
+          print("v:%s" %self.cacheAssoc[iassoc].cacheblock[iblock].valid, end=" ")
+          print("o:%s" %self.cacheAssoc[iassoc].cacheblock[iblock].ongoing, end=" ")
+          print("t:%4s" %self.cacheAssoc[iassoc].cacheblock[iblock].tag, end=" ")
+          print("[", end="")
           for isubblock in range(0, self.getCfgByName("subblocknum")):
-            print(self.cacheAssoc[iassoc].cacheblock[iblock].cacheSubBlock[isubblock].subblock_valid, end="")
+            print("%4s"%(self.cacheAssoc[iassoc].cacheblock[iblock].cacheSubBlock[isubblock].subblock_addr), end="")
+          print("]", end="   ")
         print()
       print()
     else:
@@ -144,19 +149,19 @@ class Cache:
       print()
 
   def printCacheInfo(self):
-    print("========Cache Report=======")
-    print("#Access              =  %8d"% (self.getAtrByName("accesscount")))
-    print("#Hit                 =  %8d  (%f %%)"% (self.getAtrByName("hitcount")
-                                                ,  int(self.getAtrByName("hitcount"))/int(self.getAtrByName("accesscount")) * 100.0 ))
-    print("#Miss                =  %8d  (%f %%)"% (self.getAtrByName("misscount")
-                                                 , int(self.getAtrByName("misscount"))/int(self.getAtrByName("accesscount")) * 100.0))
-    print("#PrefetchAccess      =  %8d"% (self.getAtrByName("prefetchcount")))
+    print("======== [ %s ] Cache Report =======" %self.node_ptr.node_name)
+    print("#Access              =  %8d"% (self.getAtrByName("AccessCount")))
+    print("#Hit                 =  %8d  (%f %%)"% (self.getAtrByName("HitCount")
+                                                ,  int(self.getAtrByName("HitCount"))/int(self.getAtrByName("AccessCount")) * 100.0 ))
+    print("#Miss                =  %8d  (%f %%)"% (self.getAtrByName("MissCount")
+                                                 , int(self.getAtrByName("MissCount"))/int(self.getAtrByName("AccessCount")) * 100.0))
+    print("#PrefetchAccess      =  %8d"% (self.getAtrByName("PrefetchCount")))
     
 
   def findCacheblockToRpl(self, subblock_address):
     myblock    = (subblock_address >> int(math.log(self.getCfgByName("subblocknum"), 2)) ) % self.getCfgByName("blocknum")
     for iassoc in self.cacheAssoc:
-      if (iassoc.getCacheblock(myblock).getblockValid() == 0):
+      if (iassoc.getCacheblock(myblock).getblockValid() == 0 and iassoc.getCacheblock(myblock).getblockOngoing() == 0):
         return iassoc.getCacheblock(myblock)
 
     if (self.getCfgByName("replacement")   == self.replacement["RR"]):
@@ -177,70 +182,71 @@ class Cache:
     myblock    = (subblock_address >> int(math.log(self.getCfgByName("subblocknum"), 2)) ) % self.getCfgByName("blocknum")
     mytag      = (subblock_address >> int(math.log(self.getCfgByName("subblocknum") * self.getCfgByName("blocknum"), 2)) )
     # print(myblock, mysubblock)
+    return_value = None
     for iassoc in self.cacheAssoc:
       if (iassoc.getCacheblock(myblock).getblockTag() == mytag):
-        if (iassoc.getCacheblock(myblock).getblockValid() == 1 or iassoc.getCacheblock(myblock).cacheSubBlock[mysubblock].subblock_valid == 1):
-          if (self.getCfgByName("replacement") == self.replacement["LRU"]):
-            self.LRUlist.remove(iassoc.assoc_ID)
-            self.LRUlist.insert(0, iassoc.assoc_ID)
-          return iassoc.getCacheblock(myblock)
-    return None
+        # assert(iassoc.getCacheblock(myblock).getblockValid() == 1 and iassoc.getCacheblock(myblock).getblockOngoing() == 0), ("blockValid() == 1 and Ongoing == 0 ")
+        if (iassoc.getCacheblock(myblock).getblockValid() == 1):
+          return_value = Cache.isCachereState("CACHE_HIT")
+        elif (iassoc.getCacheblock(myblock).getblockOngoing() == 1 and iassoc.getCacheblock(myblock).cacheSubBlock[mysubblock].subblock_valid == 1):
+          return_value = Cache.isCachereState("CACHE_ONGO_HIT")
+        elif (iassoc.getCacheblock(myblock).getblockOngoing() == 1 and iassoc.getCacheblock(myblock).cacheSubBlock[mysubblock].subblock_valid == 0):
+          return_value = Cache.isCachereState("CACHE_ONGO_MISS")
+        else:
+          assert(False), ("False")
+    if (return_value == None):
+      return_value = Cache.isCachereState("CACHE_MISS")
+          # if (self.getCfgByName("replacement") == self.replacement["LRU"]):
+            # self.LRUlist.remove(iassoc.assoc_ID)
+            # self.LRUlist.insert(0, iassoc.assoc_ID)
+    return return_value
 
   def prefetchCache(self, subblock_address):
-    self.incAtrByName("prefetchcount")
+    self.incAtrByName("PrefetchCount")
     self.accessCache(subblock_address)
 
   def accessCache(self, subblock_address):
     mytag   = (subblock_address >> int(math.log(self.getCfgByName("subblocknum") * self.getCfgByName("blocknum"), 2)) )
     myblock = (subblock_address >> int(math.log(self.getCfgByName("subblocknum"), 2)) ) % self.getCfgByName("blocknum")
     find_re = self.findCache(subblock_address)
-    self.incAtrByName("accesscount")
+    self.incAtrByName("AccessCount")
     #cache hit
-    if (not find_re == None):
-      self.incAtrByName("hitcount")
-      return Cache.isCachereState("CACHE_HIT")
-    #cache miss
-    else:
-      self.incAtrByName("misscount")
-      
-      for iassoc in self.cacheAssoc:
-        if (iassoc.getCacheblock(myblock).getblockOngoing() == 1 and iassoc.getCacheblock(myblock).getblockTag() == mytag):
-          return Cache.isCachereState("CACHE_ONGO_MISS")
-    
+    if (find_re == Cache.isCachereState("CACHE_HIT")):
+      self.incAtrByName("HitCount")
+    elif (find_re == Cache.isCachereState("CACHE_ONGO_MISS")):
+      self.incAtrByName("OngoMissCount")
+    elif (find_re == Cache.isCachereState("CACHE_ONGO_HIT")):
+      self.incAtrByName("OngoHitCount")
+    elif (find_re == Cache.isCachereState("CACHE_MISS")):
+      self.incAtrByName("MissCount")
       rplblock = self.findCacheblockToRpl(subblock_address)
       rplblock.invalidblock()
       rplblock.setblockOngoing()
       rplblock.setblockTag(mytag)
-      return Cache.isCachereState("CACHE_MISS")
-
-  def accessCache_bak(self, subblock_address):
-    mytag   = (subblock_address >> int(math.log(self.getCfgByName("subblocknum") * self.getCfgByName("blocknum"), 2)) )
-    find_re = self.findCache(subblock_address)
-    self.incAtrByName("accesscount")
-    #cache hit
-    if (not find_re == None):
-      self.incAtrByName("hitcount")
-      return Cache.isCachereState("CACHE_HIT")
-    #cache miss
-    else:
-      self.incAtrByName("misscount")
-      rplblock = self.findCacheblockToRpl(subblock_address)
-      rplblock.validblock()
-      rplblock.setblockTag(mytag)
-      return Cache.isCachereState("CACHE_MISS")
-      
+    return find_re
+    
   def accessSubblockCache(self, subblock_address):
+    mysubblock = subblock_address % self.getCfgByName("subblocknum")
     mytag   = (subblock_address >> int(math.log(self.getCfgByName("subblocknum") * self.getCfgByName("blocknum"), 2)) )
     myblock = (subblock_address >> int(math.log(self.getCfgByName("subblocknum"), 2)) ) % self.getCfgByName("blocknum")
     find_re = self.findCache(subblock_address)
-    assert (find_re == None), ("Error find_re == None")
+    
+    # print("subblock_address", subblock_address)
+    # print("mysubblock", mysubblock)
+    # print("mytag", mytag)
+    # print("myblock", myblock)
+    # print("cache_outsdng_req", self.cache_outsdng_req)
+    # print("find_re", find_re)
+    # self.printCacheContentInfo(-1)
+    # assert (find_re == Cache.isCachereState("CACHE_ONGO_MISS")), ("Error find_re != CACHE_ONGO_MISS", find_re)
     
     for iassoc in self.cacheAssoc:
       if (iassoc.getCacheblock(myblock).getblockOngoing() == 1 and iassoc.getCacheblock(myblock).getblockTag() == mytag):
         iassoc.getCacheblock(myblock).validSubblock(subblock_address%self.getCfgByName("subblocknum"))
+        iassoc.getCacheblock(myblock).cacheSubBlock[mysubblock].subblock_addr = subblock_address
         return iassoc.getCacheblock(myblock).checkAndsetBlockfinish()
     
-    assert (False), ("Error accessSubblockCache")
+    # assert (False), ("Error accessSubblockCache")
 
   def initialize(self):
     ### parseConfig xml ###
@@ -267,11 +273,13 @@ class Cache:
     self.LRUlist    = [] #LRU list for replacement
 
     ### outstanding list in Cache from high (Transaction) ###
-    self.cache_higher_outsdng = []
+    self.cache_higher_outsdng_trans = []
     ### outstanding list in Cache from low (Transaction) ###
-    self.cache_lower_outsdng = []
-    ### outstanding list in Cache (request) ###
+    self.cache_lower_outsdng_trans = []
+    ### outstanding list in Cache (record request from VLC) ###
     self.cache_outsdng_req = []
+    ### prefectch list in Cache (subblock) ###
+    self.cache_prefectch_subblock_queue = Queue()
 
   def initial_cycle(self):
     pass
@@ -293,59 +301,106 @@ class Cache:
         assert (not cur_transaction.destination_list == None ), ("not cur_transaction.destination_list == None")
 
         if( value.port_belong_bus_ptr.bus_name == self.node_ptr.node_higher_bus):
-          self.cache_higher_outsdng.append(cur_transaction)
+          self.cache_higher_outsdng_trans.append(cur_transaction)
         elif( value.port_belong_bus_ptr.bus_name == self.node_ptr.node_lower_bus):
-          self.cache_lower_outsdng.append(cur_transaction)
+          self.cache_lower_outsdng_trans.append(cur_transaction)
 
   def cur_cycle(self):
-    for i_cache_higher_outsdng in self.cache_higher_outsdng:
-      ### count down the counter for each transaction in cache_higher_outsdng ###
-      if(i_cache_higher_outsdng.state == Cache.isCachereState("CACHE_WAIT") and i_cache_higher_outsdng.counter > 0):
-        i_cache_higher_outsdng.counter -= 1
-      if(i_cache_higher_outsdng.state == Cache.isCachereState("CACHE_WAIT") and i_cache_higher_outsdng.counter == 0):
-        my_req = i_cache_higher_outsdng.source_req
-        i_cache_higher_outsdng.state = self.accessCache(my_req.subblockaddr)
+    ### from higher ###
+    for i_cache_higher_outsdng_trans in self.cache_higher_outsdng_trans:
+      ### count down the counter for each transaction in cache_higher_outsdng_trans ###
+      if(i_cache_higher_outsdng_trans.state == Cache.isCachereState("CACHE_WAIT") and i_cache_higher_outsdng_trans.counter > 0):
+        i_cache_higher_outsdng_trans.counter -= 1
+      if(i_cache_higher_outsdng_trans.state == Cache.isCachereState("CACHE_WAIT") and i_cache_higher_outsdng_trans.counter == 0):
+        my_subblockaddr = i_cache_higher_outsdng_trans.subblockaddr
+        ### Cache access ###
+        i_cache_higher_outsdng_trans.state = self.accessCache(my_subblockaddr)
+        ### Cache prefetch check access ###
+        this_block_head_subblock = my_subblockaddr - (my_subblockaddr%self.getCfgByName("subblocknum"))
+        # print(this_block_head_subblock, end=":")
+        for i_prefetch in range(1, self.getCfgByName("prefetch") + 1):
+          prefetch_block_head_subblock = this_block_head_subblock + i_prefetch*self.getCfgByName("subblocknum")
+          # print(prefetch_block_head_subblock, end=";")
+          if(self.findCache(prefetch_block_head_subblock) == Cache.isCachereState("CACHE_MISS")):
+            self.cache_prefectch_subblock_queue.put(prefetch_block_head_subblock)
+        # print(self.cache_prefectch_subblock_queue.queue)
+        
+        # self.cache_prefectch_subblock_queue
 
-    for i_cache_lower_outsdng in self.cache_lower_outsdng:
-      ### count down the counter for each transaction in cache_lower_outsdng ###
-      if(i_cache_lower_outsdng.state == Cache.isCachereState("CACHE_WAIT") and i_cache_lower_outsdng.counter > 0):
-        i_cache_lower_outsdng.counter -= 1
-      if(i_cache_lower_outsdng.state == Cache.isCachereState("CACHE_WAIT") and i_cache_lower_outsdng.counter == 0):
-        cache_re = self.accessSubblockCache(i_cache_lower_outsdng.subblockaddr)
-        i_cache_lower_outsdng.state = Cache.isCachereState("CACHE_WRITE_BACK")
+    ### from lower ###
+    for i_cache_lower_outsdng_trans in self.cache_lower_outsdng_trans:
+      ### count down the counter for each transaction in cache_lower_outsdng_trans ###
+      if(i_cache_lower_outsdng_trans.state == Cache.isCachereState("CACHE_WAIT") and i_cache_lower_outsdng_trans.counter > 0):
+        i_cache_lower_outsdng_trans.counter -= 1
+      if(i_cache_lower_outsdng_trans.state == Cache.isCachereState("CACHE_WAIT") and i_cache_lower_outsdng_trans.counter == 0):
+        cache_re = self.accessSubblockCache(i_cache_lower_outsdng_trans.subblockaddr)
+        i_cache_lower_outsdng_trans.state = Cache.isCachereState("CACHE_WRITE_BACK")
 
   def pos_cycle(self):
-    ### cache_higher_outsdng ###
-    for i_cache_higher_outsdng in self.cache_higher_outsdng:
+    ### trigger cache_prefectch_subblock_queue ###
+    if(len(self.cache_higher_outsdng_trans) == 0):
+      while(not self.cache_prefectch_subblock_queue.qsize() == 0):
+        i_cache_prefectch_subblock_queue = self.cache_prefectch_subblock_queue.get()
+        if(self.findCache(i_cache_prefectch_subblock_queue) == Cache.isCachereState("CACHE_MISS")):
+          self.incAtrByName("PrefetchCount")
+          re = self.accessCache(i_cache_prefectch_subblock_queue)
+          assert(re == Cache.isCachereState("CACHE_MISS")), ("accessCache = CACHE_MISS")
+          ### send wrap mode transaction to lower node ###
+          mod_num = self.getCfgByName("subblocknum") - (i_cache_prefectch_subblock_queue%self.getCfgByName("subblocknum"))
+          for i_subblocknum in range(self.getCfgByName("subblocknum")):
+            if(i_subblocknum >= mod_num):
+              subblockaddr_wrap = (i_cache_prefectch_subblock_queue + i_subblocknum - self.getCfgByName("subblocknum"))
+            else:
+              subblockaddr_wrap = (i_cache_prefectch_subblock_queue + i_subblocknum)
+
+            tmp_transaction = Transaction()
+            tmp_transaction.source_node = self.node_ptr
+            tmp_transaction.destination_list.append(GlobalVar.topology_ptr.node_dist[self.node_ptr.node_lower_node])
+            tmp_transaction.duration_list.append(self.node_ptr)
+            # tmp_transaction.source_req = my_req
+            tmp_transaction.subblockaddr = subblockaddr_wrap
+
+            self.node_ptr.node_port_dist[self.node_ptr.node_name + "_" + self.node_ptr.node_lower_bus].port_NB_trans.append(tmp_transaction)
+          break
+  
+    ### cache_higher_outsdng_trans ###
+    for i_cache_higher_outsdng_trans in self.cache_higher_outsdng_trans:
       ### cache HIT ###
       ### COMMITTED meaning for need to sendback to front ###
-      my_req = i_cache_higher_outsdng.source_req
-      del self.cache_higher_outsdng[self.cache_higher_outsdng.index(i_cache_higher_outsdng)]
+      my_req = i_cache_higher_outsdng_trans.source_req
+      my_subblockaddr = i_cache_higher_outsdng_trans.subblockaddr
+      del self.cache_higher_outsdng_trans[self.cache_higher_outsdng_trans.index(i_cache_higher_outsdng_trans)]
       
-      if(i_cache_higher_outsdng.state == Cache.isCachereState("CACHE_HIT")):
-        
+      if(i_cache_higher_outsdng_trans.state == Cache.isCachereState("CACHE_HIT")):
         tmp_transaction = Transaction()
         tmp_transaction.source_node = self.node_ptr
-        tmp_transaction.destination_list.append(i_cache_higher_outsdng.source_node)
+        tmp_transaction.destination_list.append(i_cache_higher_outsdng_trans.source_node)
         tmp_transaction.duration_list.append(self.node_ptr)
         tmp_transaction.source_req = my_req
-
+        self.node_ptr.node_port_dist[self.node_ptr.node_name + "_" + self.node_ptr.node_higher_bus].port_NB_trans.append(tmp_transaction)
+      elif(i_cache_higher_outsdng_trans.state == Cache.isCachereState("CACHE_ONGO_HIT")):
+        tmp_transaction = Transaction()
+        tmp_transaction.source_node = self.node_ptr
+        tmp_transaction.destination_list.append(i_cache_higher_outsdng_trans.source_node)
+        tmp_transaction.duration_list.append(self.node_ptr)
+        tmp_transaction.source_req = my_req
         self.node_ptr.node_port_dist[self.node_ptr.node_name + "_" + self.node_ptr.node_higher_bus].port_NB_trans.append(tmp_transaction)
       ### cache MISS ###
       ### OUTSTANDING meaning for need to send to node_lower_node ###
-      elif (i_cache_higher_outsdng.state == Cache.isCachereState("CACHE_MISS")):
+      elif (i_cache_higher_outsdng_trans.state == Cache.isCachereState("CACHE_MISS")):
         assert (not self.node_ptr.node_lower_node == "None"), ("not self.node_ptr.node_lower_node in cache == None")
         ### record "#subblocknum" OUTSTANDING address ###
         self.cache_outsdng_req.append(my_req)
-        dbg_cache_outsdng_req.put(my_req.subblockaddr)
-        mod_num = self.getCfgByName("subblocknum") - (my_req.subblockaddr%self.getCfgByName("subblocknum"))
+        dbg_cache_outsdng_req.put(my_subblockaddr)
+        ### send wrap mode transaction to lower node ###
+        mod_num = self.getCfgByName("subblocknum") - (my_subblockaddr%self.getCfgByName("subblocknum"))
         for i_subblocknum in range(self.getCfgByName("subblocknum")):
           if(i_subblocknum >= mod_num):
-            subblockaddr_wrap = (my_req.subblockaddr + i_subblocknum - self.getCfgByName("subblocknum"))
+            subblockaddr_wrap = (my_subblockaddr + i_subblocknum - self.getCfgByName("subblocknum"))
           else:
-            subblockaddr_wrap = (my_req.subblockaddr + i_subblocknum)
+            subblockaddr_wrap = (my_subblockaddr + i_subblocknum)
 
-          tmp_transaction = Transaction()
+          tmp_transaction = Transaction() 
           tmp_transaction.source_node = self.node_ptr
           tmp_transaction.destination_list.append(GlobalVar.topology_ptr.node_dist[self.node_ptr.node_lower_node])
           tmp_transaction.duration_list.append(self.node_ptr)
@@ -353,33 +408,34 @@ class Cache:
           tmp_transaction.subblockaddr = subblockaddr_wrap
 
           self.node_ptr.node_port_dist[self.node_ptr.node_name + "_" + self.node_ptr.node_lower_bus].port_NB_trans.append(tmp_transaction)
-      elif (i_cache_higher_outsdng.state == Cache.isCachereState("CACHE_ONGO_MISS")):
+      elif (i_cache_higher_outsdng_trans.state == Cache.isCachereState("CACHE_ONGO_MISS")):
         self.cache_outsdng_req.append(my_req)
-        dbg_cache_outsdng_req.put(my_req.subblockaddr)
+        dbg_cache_outsdng_req.put(my_subblockaddr)
+      else:
+        assert(False), ("i_cache_higher_outsdng_trans.state must in Cache list", i_cache_higher_outsdng_trans.state)
 
-    ### cache_lower_outsdng ###
-    for i_cache_lower_outsdng in self.cache_lower_outsdng:
+    ### cache_lower_outsdng_trans ###
+    for i_cache_lower_outsdng_trans in self.cache_lower_outsdng_trans:
       ### cache WRITE BACK ###
       ### meaning for need to sendback to front ###
-      if(i_cache_lower_outsdng.state == Cache.isCachereState("CACHE_WRITE_BACK")):
+      if(i_cache_lower_outsdng_trans.state == Cache.isCachereState("CACHE_WRITE_BACK")):
         ### reply cache_outsdng_req ###
         commit_cache_outsdng_req = []
         for i_cache_outsdng_req in self.cache_outsdng_req:
-          if(i_cache_outsdng_req.subblockaddr == i_cache_lower_outsdng.subblockaddr):
+          if(i_cache_outsdng_req.subblockaddr == i_cache_lower_outsdng_trans.subblockaddr):
             tmp_transaction = Transaction()
             tmp_transaction.source_node = self.node_ptr
             tmp_transaction.destination_list.append(i_cache_outsdng_req.source_node)
             tmp_transaction.duration_list.append(self.node_ptr)
             tmp_transaction.source_req = i_cache_outsdng_req
             self.node_ptr.node_port_dist[self.node_ptr.node_name + "_" + self.node_ptr.node_higher_bus].port_NB_trans.append(tmp_transaction)
-        
             commit_cache_outsdng_req.append(i_cache_outsdng_req)
         ### del committed cache_outsdng_req ###
         for i_commit_cache_outsdng_req in commit_cache_outsdng_req:
           self.cache_outsdng_req.remove(i_commit_cache_outsdng_req)
         
         # del self.cache_outsdng_req[self.cache_outsdng_req.index(i_cache_outsdng_req)]
-        del self.cache_lower_outsdng[self.cache_lower_outsdng.index(i_cache_lower_outsdng)]
+        del self.cache_lower_outsdng_trans[self.cache_lower_outsdng_trans.index(i_cache_lower_outsdng_trans)]
 
 #--------------------------------------------
 # class Cache
@@ -414,6 +470,7 @@ class Cacheblock:
     self.valid = 0
     for i_subblock in self.cacheSubBlock:
       i_subblock.subblock_valid = 0
+      i_subblock.subblock_addr = -1
 
   def validblock(self):
     self.valid = 1
@@ -464,8 +521,8 @@ class Cacheblock:
     self.rplptr = 0
     self.valid = 0
     self.ongoing = 0
-    self.hitcount = 0
-    self.misscount = 0
+    self.HitCount = 0
+    self.MissCount = 0
     self.tag = -1
 
     self.cacheassoc_ptr = -1
@@ -482,6 +539,7 @@ class CacheSubBlock:
   def __init__(self):
     self.subblock_ID    = -1
     self.subblock_valid = 0
+    self.subblock_addr = -1
 
     self.cacheblock_ptr = -1
 

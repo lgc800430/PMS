@@ -40,9 +40,9 @@ class VLC:
                       , "entrysize"
                       , "outsdng" 
                       , "Trace_idx"]
-  attributelist     = [ "misscount"
-                      , "accesscount"
-                      , "hitcount"
+  attributelist     = [ "MissCount"
+                      , "AccessCount"
+                      , "HitCount"
                       , "VLC_FIFO_EMPTY"
                       , "VLC_FIFO_EMPTY_AVG" ]
   
@@ -124,11 +124,11 @@ class VLC:
 
   def printVLCInfo(self):
     print("========VLC Report=======")
-    print("#Access              =  %8d"% (self.getAtrByName("accesscount")))
-    print("#Hit                 =  %8d  (%f %%)"% (self.getAtrByName("hitcount")
-                                                ,  int(self.getAtrByName("hitcount"))/int(self.getAtrByName("accesscount")) * 100.0 ))
-    print("#Miss                =  %8d  (%f %%)"% (self.getAtrByName("misscount")
-                                                 , int(self.getAtrByName("misscount"))/int(self.getAtrByName("accesscount")) * 100.0))
+    print("#Access              =  %8d"% (self.getAtrByName("AccessCount")))
+    print("#Hit                 =  %8d  (%f %%)"% (self.getAtrByName("HitCount")
+                                                ,  int(self.getAtrByName("HitCount"))/int(self.getAtrByName("AccessCount")) * 100.0 ))
+    print("#Miss                =  %8d  (%f %%)"% (self.getAtrByName("MissCount")
+                                                 , int(self.getAtrByName("MissCount"))/int(self.getAtrByName("AccessCount")) * 100.0))
 
   def initInstList(self, input_asm):
   
@@ -361,7 +361,6 @@ class VLC:
     self.cur_PC = 0
 
     self.VLC_state = 0
-    # self.VLC_nextState = 0
 
   def initial_cycle(self):
     myPCTracer = self.PCTracer_ptr
@@ -423,7 +422,7 @@ class VLC:
 
       if (self.VLC_state == VLC.isVLCreState("VLC_NEXT_INST_HIT")):
         self.consumeEntryAndInstptr()
-        self.incAtrByName("hitcount")# #####################################
+        self.incAtrByName("HitCount")# #####################################
         if (not myPCTracer.consumePC() == "PCend"):
           self.PCTracer_counter = self.calStallTime()
           if (self.PCTracer_counter > 0):
@@ -437,10 +436,10 @@ class VLC:
         PCTracerNextState = ("PCTracer_PENDING_BY_VLC")
 
     elif (myPCTracer.PCTracer_state == PCTracer.isPCTracer_state("PCTracer_ASSIGN_PC")):
-      self.incAtrByName("accesscount")# #####################################
+      self.incAtrByName("AccessCount")# #####################################
       if   (self.VLC_state == VLC.isVLCreState("VLC_NEXT_INST_HIT")):
         self.consumeEntryAndInstptr()
-        self.incAtrByName("hitcount")# #####################################
+        self.incAtrByName("HitCount")# #####################################
         if (not myPCTracer.consumePC() == "PCend"):
           self.PCTracer_counter = self.calStallTime()
           if (self.PCTracer_counter > 0):
@@ -452,13 +451,13 @@ class VLC:
       elif (self.VLC_state == VLC.isVLCreState("VLC_NOT_NEXT_INST")):
         self.flushVLC(self.cur_PC)
         PCTracerNextState = ("PCTracer_PENDING_BY_VLC")
-        self.incAtrByName("misscount")  # #####################################
+        self.incAtrByName("MissCount")  # #####################################
       elif (self.VLC_state == VLC.isVLCreState("VLC_NEXT_INST_PARTIAL_MISS")):
         PCTracerNextState = ("PCTracer_PENDING_BY_VLC")
-        self.incAtrByName("misscount")  # #####################################
+        self.incAtrByName("MissCount")  # #####################################
       elif (self.VLC_state == VLC.isVLCreState("VLC_NEXT_INST_WHOLE_MISS")):
         PCTracerNextState = ("PCTracer_PENDING_BY_VLC")
-        self.incAtrByName("misscount")  # #####################################
+        self.incAtrByName("MissCount")  # #####################################
 
     myPCTracer.transPCTracerNextState(PCTracerNextState)
     self.findFreeEntryandFill()
@@ -485,6 +484,7 @@ class VLC:
         tmp_transaction.destination_list.append(GlobalVar.topology_ptr.node_dist[self.node_ptr.node_lower_node])
         tmp_transaction.duration_list.append(self.node_ptr)
         tmp_transaction.source_req = self.outsdnglist[ioutsdnglist]
+        tmp_transaction.subblockaddr = self.outsdnglist[ioutsdnglist].subblockaddr
         
         self.node_ptr.node_port_dist[self.node_ptr.node_name + "_" + self.node_ptr.node_lower_bus ].port_NB_trans.append(tmp_transaction)
 

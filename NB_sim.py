@@ -20,6 +20,7 @@ from VLC import *
 from PCTracer import *
 from GlobalVar import *
 
+
 class NB_sim:
   def __init__(self):
     self.current_CYC = 0 #this is the central cycle of all simulator
@@ -45,19 +46,17 @@ class NB_sim:
       if(value.node_class == "Cache"):
         value.node_ptr.printCacheContentInfo(-1)
     
-
   def initSimulate(self, u_topology):
     # self.transPCSimNextState("ASSIGN_PC")
     # firstPC = 0
     # a, initclock, b = self.u_PCTracer.PClist[firstPC].replace(" ", "").split(",")
     # self.current_CYC = int(initclock)
-
     for key, value in u_topology.node_dist.items():
       value.node_ptr.initial_cycle()
 
     for key, value in u_topology.bus_dist.items():
       value.initial_cycle()
-
+  
   def node_pre_cycle(self, u_topology):
     for key, value in u_topology.node_dist.items():
       value.node_ptr.pre_cycle()
@@ -81,9 +80,8 @@ class NB_sim:
   def bus_pos_cycle(self, u_topology):
     for key, value in u_topology.bus_dist.items():
       value.pos_cycle()
-
+  
   def run(self, u_topology):
-
     ### first step => Bus run  ###
     self.bus_pre_cycle(u_topology)
     self.bus_cur_cycle(u_topology)
@@ -92,8 +90,7 @@ class NB_sim:
     self.node_pre_cycle(u_topology)
     self.node_cur_cycle(u_topology)
     self.node_pos_cycle(u_topology)
-    
-    print("current_CYC = ", self.current_CYC)
+    # print("current_CYC = ", self.current_CYC)
     self.current_CYC += 1
     
     

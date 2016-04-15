@@ -230,11 +230,11 @@ class Simulator:
       self.cur_abstime[thread_idx], self.cur_clock[thread_idx], self.cur_PC[thread_idx] = self.u_PCTracer[thread_idx].nextPC()
       re_VLC = self.u_vlc[thread_idx].consumeNextInst(self.cur_PC[thread_idx])
       # #####################################
-      self.u_vlc[thread_idx].incAtrByName("accesscount")
+      self.u_vlc[thread_idx].incAtrByName("AccessCount")
       # #####################################
       if (re_VLC == VLC.isVLCreState("VLC_NEXT_INST_HIT")):
         # #####################################
-        self.u_vlc[thread_idx].incAtrByName("hitcount")
+        self.u_vlc[thread_idx].incAtrByName("HitCount")
         # #####################################
         if (not self.u_PCTracer[thread_idx].consumePC() == "PCend"):
           if (self.calStallTime(thread_idx) >= 0):
@@ -245,19 +245,19 @@ class Simulator:
 
       elif (re_VLC == VLC.isVLCreState("VLC_NOT_NEXT_INST")):
         # #####################################
-        self.u_vlc[thread_idx].incAtrByName("misscount")
+        self.u_vlc[thread_idx].incAtrByName("MissCount")
         # #####################################
         self.transPCSimNextState(thread_idx, "PCTracer_PENDING_BY_VLC")
 
       elif (re_VLC == VLC.isVLCreState("VLC_NEXT_INST_PARTIAL_MISS")):
         # #####################################
-        self.u_vlc[thread_idx].incAtrByName("misscount")
+        self.u_vlc[thread_idx].incAtrByName("MissCount")
         # #####################################
         self.transPCSimNextState(thread_idx, "PCTracer_PENDING_BY_VLC")
 
       elif (re_VLC == VLC.isVLCreState("VLC_NEXT_INST_WHOLE_MISS")):
         # #####################################
-        self.u_vlc[thread_idx].incAtrByName("misscount")
+        self.u_vlc[thread_idx].incAtrByName("MissCount")
         # #####################################
         self.transPCSimNextState(thread_idx, "PCTracer_PENDING_BY_VLC")
 
@@ -294,19 +294,19 @@ class Simulator:
     GlobalVar.outputptr.write("#Performance loss    =  %8.2f %%\n"% ((int(self.current_CYC[thread_idx]) - int(lastclock))/int(lastclock) * 100.0  ))
 
     GlobalVar.outputptr.write("\n========Cache Report=======\n")
-    GlobalVar.outputptr.write("#Access              =  %8d\n"% (self.u_cache.getAtrByName("accesscount")))
-    GlobalVar.outputptr.write("#Hit                 =  %8d  (%5.2f %%)\n"% (self.u_cache.getAtrByName("hitcount")
-                                                               ,  int(self.u_cache.getAtrByName("hitcount"))/int(self.u_cache.getAtrByName("accesscount")) * 100.0  ))
-    GlobalVar.outputptr.write("#Miss                =  %8d  (%5.2f %%)\n"% (self.u_cache.getAtrByName("misscount")
-                                                               , int(self.u_cache.getAtrByName("misscount"))/int(self.u_cache.getAtrByName("accesscount")) * 100.0  ))
-    GlobalVar.outputptr.write("#PrefetchAccess      =  %8d\n"% (self.u_cache.getAtrByName("prefetchcount")))
+    GlobalVar.outputptr.write("#Access              =  %8d\n"% (self.u_cache.getAtrByName("AccessCount")))
+    GlobalVar.outputptr.write("#Hit                 =  %8d  (%5.2f %%)\n"% (self.u_cache.getAtrByName("HitCount")
+                                                               ,  int(self.u_cache.getAtrByName("HitCount"))/int(self.u_cache.getAtrByName("AccessCount")) * 100.0  ))
+    GlobalVar.outputptr.write("#Miss                =  %8d  (%5.2f %%)\n"% (self.u_cache.getAtrByName("MissCount")
+                                                               , int(self.u_cache.getAtrByName("MissCount"))/int(self.u_cache.getAtrByName("AccessCount")) * 100.0  ))
+    GlobalVar.outputptr.write("#PrefetchAccess      =  %8d\n"% (self.u_cache.getAtrByName("PrefetchCount")))
 
     GlobalVar.outputptr.write("\n========VLC Report=======\n")
-    GlobalVar.outputptr.write("#Access              =  %8d\n"% (self.u_vlc[thread_idx].getAtrByName("accesscount")))
-    GlobalVar.outputptr.write("#Hit                 =  %8d  (%5.2f %%)\n"% (self.u_vlc[thread_idx].getAtrByName("hitcount")
-                                                               ,  int(self.u_vlc[thread_idx].getAtrByName("hitcount"))/int(self.u_vlc[thread_idx].getAtrByName("accesscount")) * 100.0  ))
-    GlobalVar.outputptr.write("#Miss                =  %8d  (%5.2f %%)\n"% (self.u_vlc[thread_idx].getAtrByName("misscount")
-                                                               , int(self.u_vlc[thread_idx].getAtrByName("misscount"))/int(self.u_vlc[thread_idx].getAtrByName("accesscount")) * 100.0  ))
+    GlobalVar.outputptr.write("#Access              =  %8d\n"% (self.u_vlc[thread_idx].getAtrByName("AccessCount")))
+    GlobalVar.outputptr.write("#Hit                 =  %8d  (%5.2f %%)\n"% (self.u_vlc[thread_idx].getAtrByName("HitCount")
+                                                               ,  int(self.u_vlc[thread_idx].getAtrByName("HitCount"))/int(self.u_vlc[thread_idx].getAtrByName("AccessCount")) * 100.0  ))
+    GlobalVar.outputptr.write("#Miss                =  %8d  (%5.2f %%)\n"% (self.u_vlc[thread_idx].getAtrByName("MissCount")
+                                                               , int(self.u_vlc[thread_idx].getAtrByName("MissCount"))/int(self.u_vlc[thread_idx].getAtrByName("AccessCount")) * 100.0  ))
 
     GlobalVar.outputptr.write("\n\n\n")
 
