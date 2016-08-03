@@ -27,7 +27,7 @@ class Node:
     self.node_higher_bus = None   #higher level bus
     self.node_lower_bus  = None   #lower level bus
     
-    self.node_lower_node  = None   #lower level node
+    self.node_lower_node  = None  #lower level node
 
     self.node_ptr        = None   #pointer to instance of Cache
     self.node_port_dist  = {}     #Port dist of this Node

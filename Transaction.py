@@ -16,6 +16,8 @@ class Transaction:
     self.state             = Transaction.isTransactionState("INITIAL")
     self.counter           = -1
     self.subblockaddr      = -1
+    self.wrap              = -1
+    self.last              = -1
     self.source_req        = None
     
     self.source_node       = None #source node
@@ -26,6 +28,7 @@ class Transaction:
     self.state             = Transaction.isTransactionState("INITIAL")
     self.counter           = -1
     self.subblockaddr      = -1
+    self.wrap              = -1
     self.source_req        = None
     
     self.source_node       = None #source node

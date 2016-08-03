@@ -29,7 +29,7 @@ if __name__ == "__main__":
   parser = optparse.OptionParser()
 
   parser.add_option("--Dflag"         , action="store_true", dest="Dflag")
-  parser.add_option("--Sproc"         , action="store_true", dest="Sproc")
+  parser.add_option("--ShowProgress"         , action="store_true", dest="ShowProgress")
   # Input Parser
   parser.add_option("-c","--config"   , action="store"     , dest="input_conf"  , default="MT6296_Program_Memory_Simulator.config")
   # parser.add_option("-a","--assembly" , action="store"     , dest="input_asm"   , default="ELBRUS_PCB01_ELBRUS_S00_DOUBLE_ICC_IMC.disasm")
@@ -112,11 +112,11 @@ if __name__ == "__main__":
   # print(GlobalVar.allcontents_asm)
 
   Architecture.parseConfig()
-  Cache.parseConfig()
-  VLC.parseConfig()
-  Architecture.checkConfig()
-  Cache.checkConfig()
-  VLC.checkConfig()
+  # Cache.parseConfig()
+  # VLC.parseConfig()
+  # Architecture.checkConfig()
+  # Cache.checkConfig()
+  # VLC.checkConfig()
 
   #################################################################
 

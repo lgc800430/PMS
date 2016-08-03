@@ -337,7 +337,7 @@ class Simulator:
     ivtile = 0
 
     for iarch in range(Architecture.getCfgByName("threadnum")):
-      self.u_vlc.append(VLC(iarch, ivtile))
+      self.u_vlc.append(VLC())
       self.u_vlc[iarch].initialize()
 
     self.u_PCTracer = []

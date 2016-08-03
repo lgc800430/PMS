@@ -76,14 +76,14 @@
     <Bus  name="PBUS_core0_th7"   bus_delay="0"     multi_access="1"  />
     <Bus  name="PBUS_core0_th8"   bus_delay="0"     multi_access="1"  />
     <Bus  name="PBUS_core0_th9"   bus_delay="0"     multi_access="1"  />
-    <Bus  name="PBUS_core0_th10"  bus_delay="0"     multi_access="1"  />
-    <Bus  name="PBUS_core0_th11"  bus_delay="0"     multi_access="1"  />
-    <Bus  name="PBUS_core0_th12"  bus_delay="0"     multi_access="1"  />
-    <Bus  name="PBUS_core0_th13"  bus_delay="0"     multi_access="1"  />
-    <Bus  name="PBUS_core0_th14"  bus_delay="0"     multi_access="1"  />
-    <Bus  name="PBUS_core0_th15"  bus_delay="0"     multi_access="1"  />
-    <Bus  name="L1toL2AXI"        bus_delay="0"     multi_access="1"  />
-    <Bus  name="AXI"              bus_delay="0"     multi_access="1"  OutsdngTCM="16"/>
+    <Bus  name="PBUS_core0_th10"   bus_delay="0"     multi_access="1"  />
+    <Bus  name="PBUS_core0_th11"   bus_delay="0"     multi_access="1"  />
+    <Bus  name="PBUS_core0_th12"   bus_delay="0"     multi_access="1"  />
+    <Bus  name="PBUS_core0_th13"   bus_delay="0"     multi_access="1"  />
+    <Bus  name="PBUS_core0_th14"   bus_delay="0"     multi_access="1"  />
+    <Bus  name="PBUS_core0_th15"   bus_delay="0"     multi_access="1"  />
+    <Bus  name="L1toL2AXI"         bus_delay="0"     multi_access="1"  />
+    <Bus  name="AXI"               bus_delay="0"     multi_access="1"  />
   </Topology>
 
   <!-- VLC config between VLC_start and VLC_end -->
@@ -91,7 +91,7 @@
     <defult>
       <depth      value="2"  />
       <entrysize  value="16" />        <!-- Bytes -->
-      <outsdng    value="2"  />        <!-- outsdng number -->
+      <outsdng    value="2"  />        <!-- outstanding number -->
       <Trace_idx  value="0"  />
     </defult>
 
@@ -145,8 +145,9 @@
       <!-- <misspenalty  value="20"     />      cycle                 -->
       <replacement  value="1"      />      <!-- 0:RR  1:LRU  2:RANDOM -->
       <prefetch     value="0"      />
-      <!-- <outsdng      value="2"      />-->      <!-- outsdng number -->
+      <!-- <outsdng      value="2"      />-->      <!-- outstanding number -->
       <alwaysMiss   value="0"      />
+      
       
     </defult>
     

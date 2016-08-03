@@ -122,14 +122,16 @@ class VLC:
     for iattri in self.attributelist:
       self.attribute[iattri] = 0
 
+  def printAttributeInfo(self):
+    self.printVLCInfo()
   def printVLCInfo(self):
-    print("========VLC Report=======")
-    print("#Access              =  %8d"% (self.getAtrByName("AccessCount")))
-    print("#Hit                 =  %8d  (%f %%)"% (self.getAtrByName("HitCount")
-                                                ,  int(self.getAtrByName("HitCount"))/int(self.getAtrByName("AccessCount")) * 100.0 ))
-    print("#Miss                =  %8d  (%f %%)"% (self.getAtrByName("MissCount")
+    print("======== [ %s ] %s Report =======" %(self.node_ptr.node_name, self.node_ptr.node_class))
+    print("#Access   =  %8d"% (self.getAtrByName("AccessCount")))
+    print("#Hit      =  %8d  (%f %%)"% (self.getAtrByName("HitCount")
+                                     ,  int(self.getAtrByName("HitCount"))/int(self.getAtrByName("AccessCount")) * 100.0 ))
+    print("#Miss     =  %8d  (%f %%)"% (self.getAtrByName("MissCount")
                                                  , int(self.getAtrByName("MissCount"))/int(self.getAtrByName("AccessCount")) * 100.0))
-
+    print("")
   def initInstList(self, input_asm):
   
     for subblocksize_root in GlobalVar.allcontents_conf.iter('subblocksize'):
@@ -300,6 +302,8 @@ class VLC:
       if( not i_outsdnglist.state == Request.isRequestState("INITIAL")):
         i_outsdnglist.flushed = True
 
+    self.subblock_queue.queue.clear()
+
     for i_outsdnglist in self.outsdnglist:
       ### fill subblock_queue the flush num ###
       self.subblock_queue.put(wanted_insthead + self.outsdnglist.index(i_outsdnglist))
@@ -311,6 +315,9 @@ class VLC:
     try_abstime, try_clock, try_PC = myPCTracer.nextPC()
     return (int(try_clock) - int(self.cur_clock) - 1)
 
+  def print_dbg_info(self):
+    pass
+    
   def initialize(self):
     input_asm = GlobalVar.allcontents_asm
     

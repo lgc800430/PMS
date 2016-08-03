@@ -49,14 +49,14 @@ if __name__ == "__main__":
   GlobalVar.topology_ptr.parseConfig()
   GlobalVar.topology_ptr.constructNB()
   print("Topology end")
-  for key, value in GlobalVar.topology_ptr.node_dist.items():
-    print(key, value, value.node_name, value.node_port_dist)
-  print("")
-  for key, value in GlobalVar.topology_ptr.bus_dist.items():
-    print(key, value, value.bus_name, value.bus_port_dist)
-  print("")
-  for key, value in GlobalVar.topology_ptr.port_dist.items():
-    print(key, value, value.port_name, value.port_belong_node_ptr.node_name, value.port_belong_bus_ptr.bus_name)
+  #for key, value in GlobalVar.topology_ptr.node_dist.items():
+  #  print(key, value, value.node_name, value.node_port_dist)
+  #print("")
+  #for key, value in GlobalVar.topology_ptr.bus_dist.items():
+  #  print(key, value, value.bus_name, value.bus_port_dist)
+  #print("")
+  #for key, value in GlobalVar.topology_ptr.port_dist.items():
+  #  print(key, value, value.port_name, value.port_belong_node_ptr.node_name, value.port_belong_bus_ptr.bus_name)
   #########################################################################
 
   u_NB_sim = NB_sim()

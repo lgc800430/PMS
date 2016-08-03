@@ -38,11 +38,11 @@ class GlobalVar:
     parser = optparse.OptionParser()
 
     parser.add_option("--Dflag"         , action="store_true", dest="Dflag")
-    parser.add_option("--Sproc"         , action="store_true", dest="Sproc")
+    parser.add_option("--ShowProgress"  , action="store_true", dest="ShowProgress")
     # Input Parser
     parser.add_option("-c","--config"   , action="store"     , dest="input_conf"  , default="MT6296_Program_Memory_Simulator.xml")
     # parser.add_option("-a","--assembly" , action="store"     , dest="input_asm"   , default="ELBRUS_PCB01_ELBRUS_S00_DOUBLE_ICC_IMC.disasm")
-    parser.add_option("-a","--assembly" , action="store"     , dest="input_asm"   , default="ICC_IMC.txt")
+    parser.add_option("-a","--assembly" , action="store"     , dest="input_asm"   , default="ICC_IMC_1000.txt")
     default_trace = ""
     default_trace += "icc_pm_profiling_35525_shift00000000.txt"
     default_trace += ",imc_pm_profiling_35525_shift0001e734.txt"
@@ -50,6 +50,7 @@ class GlobalVar:
     default_trace += ",imc_pm_profiling_35515_shift0006166f.txt"
 
     # parser.add_option("-t","--trace"    , action="store"     , dest="input_trc"   , default=default_trace)
+    # parser.add_option("-t","--trace"    , action="store"     , dest="input_trc"   , default="icc_1000.txt,imc_1000.txt")
     parser.add_option("-t","--trace"    , action="store"     , dest="input_trc"   , default="icc.txt,imc.txt")
     parser.add_option("-o","--output"   , action="store"     , dest="output_re"   , default="output.txt")
     #Cache Config
@@ -63,6 +64,11 @@ class GlobalVar:
     parser.add_option("--misspenalty"   , action="store"     , dest="user_misspenalty")
     parser.add_option("--replacement"   , action="store"     , dest="user_replacement")
     parser.add_option("--prefetch"      , action="store"     , dest="user_prefetch")
+    parser.add_option("--alwaysMiss"    , action="store"     , dest="user_alwaysMiss")
+    parser.add_option("--OutsdngTCM"       , action="store"     , dest="user_OutsdngTCM")
+    
+    
+    
     #PC,VLC Config
     parser.add_option("--depth"         , action="store"     , dest="user_depth")
     parser.add_option("--entrysize"     , action="store"     , dest="user_entrysize")

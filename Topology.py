@@ -33,12 +33,13 @@ class Topology:
     self.node_dist       = {}     #node dist
     self.port_dist       = {}     #Port dist
     self.bus_dist        = {}     #bus dist
-
+    
   def constructNB(self):
     Topology_root = ""
     
     for Topology_root in GlobalVar.allcontents_conf.iter('Topology'):
       for sub_tag in Topology_root:
+        print("constructNB", "finished!!!", sub_tag.attrib["name"])
         class_type = sub_tag.tag
         if(class_type == "Node"):
           tmp_node = self.node_dist[sub_tag.attrib["name"]]
@@ -51,6 +52,10 @@ class Topology:
     self.bus_dist = OrderedDict(sorted(self.bus_dist.items()))
     self.port_dist = OrderedDict(sorted(self.port_dist.items()))
     
+    for key, value in self.node_dist.items():
+      value.node_port_dist = OrderedDict(sorted(value.node_port_dist.items()))
+    for key, value in self.bus_dist.items():
+      value.bus_port_dist = OrderedDict(sorted(value.bus_port_dist.items()))
     
     
   def parseConfig(self):

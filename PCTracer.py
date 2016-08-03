@@ -24,11 +24,11 @@ class PCTracer:
   def consumePC(self):
     self.PCpointer += 1
 
-    if GlobalVar.options.Sproc == True:
-      if(self.PCpointer%10000 == 0):
+    if GlobalVar.options.ShowProgress == True:
+      if(self.PCpointer%100 == 0):
         print("[%s] PCpointer = %s/%s" %(self.VLC_ptr.node_ptr.node_name, self.PCpointer, len(self.PClist)))
     
-    print("[%s] PCpointer = %s/%s" %(self.VLC_ptr.node_ptr.node_name, self.PCpointer, len(self.PClist)))
+    # print("[%s] PCpointer = %s/%s" %(self.VLC_ptr.node_ptr.node_name, self.PCpointer, len(self.PClist)))
 
     if (self.PCpointer == len(self.PClist)):
       return "PCend"
